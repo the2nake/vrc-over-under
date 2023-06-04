@@ -1,59 +1,76 @@
 #include "main.h"
+#include "portDefinitions.h"
+#include "TankDrive.hpp"
 
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
+#include <chrono>
+
+namespace shared
+{
+    bool program_running;
+    int program_update_hz;
+    double program_delay_per_cycle;
+
+    pros::Motor *left_motor_1;
+    pros::Motor *left_motor_2;
+    pros::Motor *left_motor_top;
+    pros::Motor *right_motor_1;
+    pros::Motor *right_motor_2;
+    pros::Motor *right_motor_top;
+
+    TankDrive *drivetrain;
+};
+
+using namespace shared;
+
 void initialize()
 {
+    // ===== CONFIGURATION =====
+
+    program_update_hz = 48;
+
+    //  ===== END CONFIG =====
+
+    program_delay_per_cycle = std::max(1000.0 / program_update_hz, 5.0); // wait no lower than 5 ms
+
+    left_motor_1 = new pros::Motor(LEFT_DRIVE_PORT_1, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
+    left_motor_2 = new pros::Motor(LEFT_DRIVE_PORT_2, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
+    left_motor_top = new pros::Motor(LEFT_DRIVE_PORT_TOP, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
+    right_motor_1 = new pros::Motor(RIGHT_DRIVE_PORT_1, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
+    right_motor_2 = new pros::Motor(RIGHT_DRIVE_PORT_2, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
+    right_motor_top = new pros::Motor(RIGHT_DRIVE_PORT_TOP, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
+    drivetrain = new TankDrive({left_motor_1, left_motor_2, left_motor_top}, {right_motor_1, right_motor_2, right_motor_top}, 0.8, 220.0);
+    drivetrain->set_brake_mode(MOTOR_BRAKE_COAST);
+
+    program_running = true;
 }
 
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
 void disabled() {}
 
-/**
- * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
- * competition-specific initialization routines, such as an autonomous selector
- * on the LCD.
- *
- * This task will exit when the robot is enabled and autonomous or opcontrol
- * starts.
- */
 void competition_initialize() {}
 
-/**
- * Runs the user autonomous code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the autonomous
- * mode. Alternatively, this function may be called in initialize or opcontrol
- * for non-competition testing purposes.
- *
- * If the robot is disabled or communications is lost, the autonomous task
- * will be stopped. Re-enabling the robot will restart the task, not re-start it
- * from where it left off.
- */
 void autonomous() {}
 
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
 void opcontrol()
 {
+    pros::Controller *controller = new pros::Controller(CONTROLLER_MASTER);
+
+    while (program_running)
+    {
+        auto cycle_start = std::chrono::high_resolution_clock::now();
+
+        auto left_stick_x = controller->get_analog(ANALOG_LEFT_X) / 127.0;
+        auto right_stick_y = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
+
+        if (std::abs(left_stick_x) < 0.02 && std::abs(right_stick_y) < 0.02)
+        {
+            drivetrain->brake();
+        }
+        else
+        {
+            drivetrain->drive(right_stick_y, left_stick_x, false);
+        }
+
+        double cycle_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - cycle_start).count();
+        pros::delay(std::max(0.0, program_delay_per_cycle - cycle_time));
+    }
 }
