@@ -1,7 +1,7 @@
 #include "TankDrive.hpp"
 #include "common.hpp"
 
-TankDrive::TankDrive(std::vector<pros::Motor *> left_motors, std::vector<pros::Motor *> right_motors, double gear_ratio, double wheel_travel, double track_width, double drive_length)
+TankDrive::TankDrive(std::vector<pros::Motor *> left_motors, std::vector<pros::Motor *> right_motors, double gear_ratio, double wheel_travel, double track_width, double wheelbase)
 {
     for (auto motor : left_motors)
     {
@@ -23,7 +23,7 @@ TankDrive::TankDrive(std::vector<pros::Motor *> left_motors, std::vector<pros::M
     this->gear_ratio = gear_ratio;
     this->wheel_travel = wheel_travel;
     this->track_width = track_width;
-    this->drive_length = drive_length;
+    this->wheelbase = wheelbase;
 }
 
 TankDrive::~TankDrive()
