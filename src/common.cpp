@@ -18,3 +18,37 @@ double rpm_from_gearset(pros::motor_gearset_e_t gearing)
         break;
     }
 }
+
+void scale_down_magnitude(double &a, double &b, double max)
+{
+    if (max == 0) {
+        a = 0;
+        b = 0;
+        return;
+    }
+    max = std::abs(max);
+
+    if (std::abs(a) > max)
+    {
+        a *= std::abs(max / a);
+        b *= std::abs(max / a);
+    }
+
+    if (std::abs(b) > max)
+    {
+        a *= std::abs(max / b);
+        b *= std::abs(max / b);
+    }
+}
+
+void limit_magnitude(double &a, double max) {
+    if (max == 0) {
+        a = 0;
+        return;
+    }
+    max = std::abs(max);
+
+    if (std::abs(a) > max) {
+        a *= std::abs(max / a);
+    }
+}

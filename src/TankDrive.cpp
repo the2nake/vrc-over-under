@@ -30,24 +30,22 @@ TankDrive::~TankDrive()
 {
 }
 
-void TankDrive::drive(double fwd, double rot, bool reverse)
+void TankDrive::drive(double fwd, double rot, bool reverse, double fwd_limit, double rot_limit)
 {
+    scale_down_magnitude(fwd, rot, 1.0);
+    if (fwd_limit != 0.0)
+    {
+        limit_magnitude(fwd, std::max(fwd_limit * rot, fwd_limit));
+    }
+    if (rot_limit != 0.0)
+    {
+        limit_magnitude(rot, std::max(rot_limit * fwd, rot_limit));
+    }
+
     double left_vel = fwd + rot;
     double right_vel = fwd - rot;
 
-    if (std::abs(left_vel) > 1.0)
-    {
-        // if left_vel is too strong, reduce both values proportionally
-        // this would increase the values if std::abs(left_vel) < 1.0, but it's not
-        left_vel *= std::abs(1.0 / left_vel);
-        right_vel *= std::abs(1.0 / left_vel);
-    }
-
-    if (std::abs(right_vel) > 1.0)
-    {
-        left_vel *= std::abs(1.0 / right_vel);
-        right_vel *= std::abs(1.0 / right_vel);
-    }
+    scale_down_magnitude(left_vel, right_vel, 1.0);
 
     if (reverse)
     {
@@ -59,6 +57,7 @@ void TankDrive::drive(double fwd, double rot, bool reverse)
     {
         motor->move_voltage(12000 * left_vel);
     }
+
     for (auto motor : this->right_motors)
     {
         motor->move_voltage(12000 * right_vel);
@@ -77,7 +76,8 @@ void TankDrive::brake()
     }
 }
 
-void TankDrive::set_brake_mode(pros::motor_brake_mode_e_t mode) {
+void TankDrive::set_brake_mode(pros::motor_brake_mode_e_t mode)
+{
     for (auto motor : this->left_motors)
     {
         motor->set_brake_mode(mode);
