@@ -1,3 +1,5 @@
+/* home.vn2007@gmail.com - 2023 */
+
 #include "common.hpp"
 
 double rpm_from_gearset(pros::motor_gearset_e_t gearing)
