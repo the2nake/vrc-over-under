@@ -6,8 +6,6 @@
 
 #include "main.h"
 
-#include <atomic>
-
 #define NO_CHANGE 1000000
 
 struct Pose
@@ -25,5 +23,4 @@ public:
     virtual void set_pose(double x = NO_CHANGE, double y = NO_CHANGE, double heading = NO_CHANGE);
     virtual void update();
     virtual Pose get_pose();
-    
 };
