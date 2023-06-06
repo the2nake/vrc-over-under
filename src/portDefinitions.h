@@ -1,10 +1,17 @@
+/* home.vn2007@gmail.com - 2023 */
+
 #pragma once
 
-// TODO: reconfigure drive ports
+#define LEFT_DRIVE_PORT_1 20
+#define LEFT_DRIVE_PORT_2 19
+#define LEFT_DRIVE_PORT_TOP 18
+#define RIGHT_DRIVE_PORT_1 13
+#define RIGHT_DRIVE_PORT_2 12
+#define RIGHT_DRIVE_PORT_TOP 11
 
-#define LEFT_DRIVE_PORT_1 1
-#define LEFT_DRIVE_PORT_2 2
-#define LEFT_DRIVE_PORT_TOP 3
-#define RIGHT_DRIVE_PORT_1 4
-#define RIGHT_DRIVE_PORT_2 5
-#define RIGHT_DRIVE_PORT_TOP 6
+#define INERTIAL_PORT 14
+
+#define X_ENCODER_PORT_TOP 'A'
+#define X_ENCODER_PORT_BOTTOM 'B'
+#define Y_ENCODER_PORT_TOP 'C'
+#define Y_ENCODER_PORT_BOTTOM 'D'
