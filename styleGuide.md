@@ -2,7 +2,7 @@
 
 ## Naming
 
-- Classes will begin with an uppercase letter
+- Classes and structs will begin with an uppercase letter
 - All words in a class will be capitalised
 - Methods, functions, and arguments should use snake_case
 - Macros should use SCREAMING_SNAKE_CASE
