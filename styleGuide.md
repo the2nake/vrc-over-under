@@ -17,3 +17,4 @@
 - Always initialise private class attributes
 - When calling a method from within its class, use this->method()
 - When using an attribute of a class, use this->attribute
+- All header files should include all of the includes for every function and class used
