@@ -4,6 +4,10 @@
 
 TankDriveController::TankDriveController(TankDrive *drive, APS *aps)
 {
+    this->drive = drive;
+    this->aps = aps;
+
+    if (drive == nullptr || aps == nullptr) this->disabled = true;
 }
 
 TankDriveController::~TankDriveController()
