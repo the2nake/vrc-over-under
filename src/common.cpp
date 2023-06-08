@@ -23,7 +23,8 @@ double rpm_from_gearset(pros::motor_gearset_e_t gearing)
 
 void scale_down_magnitude(double &a, double &b, double max)
 {
-    if (max == 0) {
+    if (max == 0)
+    {
         a = 0;
         b = 0;
         return;
@@ -43,14 +44,30 @@ void scale_down_magnitude(double &a, double &b, double max)
     }
 }
 
-void limit_magnitude(double &a, double max) {
-    if (max == 0) {
+void limit_magnitude(double &a, double max)
+{
+    if (max == 0)
+    {
         a = 0;
         return;
     }
     max = std::abs(max);
 
-    if (std::abs(a) > max) {
+    if (std::abs(a) > max)
+    {
         a *= std::abs(max / a);
+    }
+}
+
+double shorter_turn(double h_0, double h_f, double circum)
+{
+    auto rightward_angle = mod(h_f - h_0, circum);
+    if (std::abs(rightward_angle) < std::abs(circum / 2.0))
+    {
+        return rightward_angle;
+    }
+    else
+    {
+        return rightward_angle - circum;
     }
 }
