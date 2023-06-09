@@ -1,10 +1,12 @@
 /* home.vn2007@gmail.com - 2023 */
 
 #include "main.h"
+
 #include "portDefinitions.h"
 #include "TankDrive.hpp"
 #include "APS.hpp"
 #include "TwoWheelAPS.hpp"
+#include "GUI.hpp"
 
 #include <chrono>
 
@@ -77,6 +79,10 @@ void autonomous() {}
 void opcontrol()
 {
     pros::Controller *controller = new pros::Controller(CONTROLLER_MASTER);
+    gui::Graph *graph = new gui::Graph(lv_scr_act());
+    graph->set_display_region({244, 4, 232, 232});
+    graph->set_window(-10.0, -10.0, 10.0, 10.0);
+    std::vector<Point<double>> points = {{0.0, 0.0}};
 
     while (program_running)
     {
@@ -94,7 +100,7 @@ void opcontrol()
             drivetrain->drive(right_stick_y, left_stick_x, false, 0.0, 0.65);
         }
 
-        aps->update();
+        graph->plot(points);
 
         double cycle_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - cycle_start).count();
         pros::delay(std::max(0.0, program_delay_per_cycle - cycle_time));

@@ -6,6 +6,12 @@
 
 #include <cmath>
 
+template <typename T>
+struct Point {
+    T x = 0;
+    T y = 0;
+};
+
 double rpm_from_gearset(pros::motor_gearset_e_t gearing);
 
 void scale_down_magnitude(double &a, double &b, double max);
