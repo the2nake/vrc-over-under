@@ -42,9 +42,8 @@ void initialize()
         0.0, // not used
         220.0,
         -85.0,
-        0.0,   // not used
-        134.0
-    };
+        0.0, // not used
+        134.0};
 
     double imu_multiplier = 1.0;
     double imu_drift = 0.0;
@@ -79,10 +78,11 @@ void autonomous() {}
 void opcontrol()
 {
     pros::Controller *controller = new pros::Controller(CONTROLLER_MASTER);
-    gui::Graph *graph = new gui::Graph(lv_scr_act());
+    gui::Graph *graph = new gui::Graph();
     graph->set_display_region({244, 4, 232, 232});
-    graph->set_window(-10.0, -10.0, 10.0, 10.0);
-    std::vector<Point<double>> points = {{0.0, 0.0}};
+    graph->set_window(-10.0, -10.0, 20.0, 20.0);
+    graph->point_width = 3;
+    std::vector<Point<double>> points = {{2.0, 2.0}};
 
     while (program_running)
     {
@@ -100,6 +100,7 @@ void opcontrol()
             drivetrain->drive(right_stick_y, left_stick_x, false, 0.0, 0.65);
         }
 
+        graph->draw();
         graph->plot(points);
 
         double cycle_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - cycle_start).count();
