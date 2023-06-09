@@ -41,9 +41,9 @@ void initialize()
         220.0,
         0.0, // not used
         220.0,
-        100.0, // TODO: remeasure in mm
-        0.0, // not used
-        100.0 // TODO: remeasure in mm
+        -85.0,
+        0.0,   // not used
+        134.0
     };
 
     double imu_multiplier = 1.0;

@@ -21,7 +21,7 @@ TwoWheelAPS::TwoWheelAPS(EncoderSetup x_setup, EncoderSetup y_setup, ApsSetup wh
     this->imu_muliplier = imu_setup.multiplier;
 
     this->x_wheel_placement = wheel_setup.strafe_wheel_distance;
-    this->y_wheel_placement = wheel_setup.left_wheel_distance;
+    this->y_wheel_placement = -wheel_setup.left_wheel_distance;
 
     this->x_wheel_travel = wheel_setup.strafe_wheel_travel;
     this->y_wheel_travel = wheel_setup.left_wheel_travel;
