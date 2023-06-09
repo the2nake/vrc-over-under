@@ -13,8 +13,8 @@
 
 #define X_ENCODER_PORT_TOP 'A'
 #define X_ENCODER_PORT_BOTTOM 'B'
-#define X_ENCODER_REVERSED true
+#define X_ENCODER_REVERSED false
 
 #define Y_ENCODER_PORT_TOP 'C'
 #define Y_ENCODER_PORT_BOTTOM 'D'
-#define Y_ENCODER_REVERSED true
+#define Y_ENCODER_REVERSED false

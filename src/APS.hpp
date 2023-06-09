@@ -6,7 +6,7 @@
 
 #include "main.h"
 
-#define NO_CHANGE 1000000
+#define NO_CHANGE 1002340
 
 struct Pose
 {
@@ -45,11 +45,8 @@ struct ImuSetup
 class APS
 {
 public:
-    virtual void set_pose(Pose pose = {NO_CHANGE, NO_CHANGE, NO_CHANGE}) {}
-    virtual void update() {}
-    virtual Pose get_pose() { return {0.0, 0.0, 0.0}; }
-    virtual bool is_disabled() { return this->disabled; }
-
-private:
-    bool disabled = false;
+    virtual void set_pose(Pose pose = {NO_CHANGE, NO_CHANGE, NO_CHANGE}) = 0;
+    virtual void update() = 0;
+    virtual Pose get_pose() = 0;
+    virtual bool is_disabled() = 0;
 };

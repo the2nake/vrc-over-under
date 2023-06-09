@@ -1,3 +1,5 @@
+/* home.vn2007@gmail.com - 2023 */
+
 #include "GUI.hpp"
 
 #include <cmath>

@@ -73,7 +73,7 @@ void TwoWheelAPS::update()
     double d_y_enc = (this->y_enc_val - prev_y_enc_val) * this->x_wheel_travel / 360.0;
     double d_heading = shorter_turn(prev_imu, this->imu_heading, 360.0) * imu_muliplier;
 
-    double d_y, d_x;
+    double d_y = 0, d_x = 0;
     if (d_heading == 0)
     {
         d_x = d_x_enc;
@@ -98,7 +98,4 @@ void TwoWheelAPS::update()
     this->y = this->y + d_g_y;
     this->heading = mod(new_heading, 360.0);
     this->pose_data_mutex.give();
-
-    pros::screen::print(TEXT_MEDIUM, 0, "(%f, %f) @ %f deg", this->x.load(), this->y.load(), this->heading.load());
-
 }

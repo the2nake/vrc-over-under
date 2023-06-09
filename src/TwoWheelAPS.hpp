@@ -27,13 +27,13 @@ private:
     double x_wheel_travel = 220.0;
     double y_wheel_travel = 220.0;
 
-    pros::Imu *imu;
+    pros::Imu *imu = nullptr;
     double imu_muliplier = 1.0;
     double imu_drift = 0.0;
 
-    std::atomic<double> x;
-    std::atomic<double> y;
-    std::atomic<double> heading;
+    std::atomic<double> x = 0.0;
+    std::atomic<double> y = 0.0;
+    std::atomic<double> heading = 0.0;
 
     double x_enc_val = 0.0;
     double y_enc_val = 0.0;

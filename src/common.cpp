@@ -59,6 +59,27 @@ void limit_magnitude(double &a, double max)
     }
 }
 
+double mod(double x, double modulo)
+{
+
+    if (modulo == 0)
+    {
+        return x;
+    }
+
+    if (x < 0)
+    {
+        return mod(x + modulo, modulo);
+    }
+
+    if (x >= modulo)
+    {
+        return mod(x - modulo, modulo);
+    }
+
+    return x;
+}
+
 double shorter_turn(double h_0, double h_f, double circum)
 {
     auto rightward_angle = mod(h_f - h_0, circum);
