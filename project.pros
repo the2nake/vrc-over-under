@@ -310,7 +310,7 @@
     },
     "upload_options": {
       "description": "Competition Code",
-      "icon": "X"
+      "icon": "pros"
     }
   }
 }
