@@ -32,18 +32,8 @@ TankDrive::~TankDrive()
 {
 }
 
-void TankDrive::drive(double fwd, double rot, bool reverse, double fwd_limit, double rot_limit)
+void TankDrive::drive(double fwd, double rot, bool reverse)
 {
-    scale_down_magnitude(fwd, rot, 1.0);
-    if (fwd_limit != 0.0)
-    {
-        limit_magnitude(fwd, std::max(fwd_limit * rot, fwd_limit));
-    }
-    if (rot_limit != 0.0)
-    {
-        limit_magnitude(rot, std::max(rot_limit * fwd, rot_limit));
-    }
-
     double left_vel = fwd + rot;
     double right_vel = fwd - rot;
 

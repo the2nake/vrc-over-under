@@ -137,7 +137,7 @@ void opcontrol()
         }
         else
         {
-            drivetrain->drive(right_stick_y, left_stick_x, false, 0.0, 0.65);
+            drivetrain->drive(right_stick_y, left_stick_x * 0.65, false);
         }
 
         auto pose = aps->get_pose();
