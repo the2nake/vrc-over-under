@@ -1,10 +1,10 @@
 /* home.vn2007@gmail.com - 2023 */
 
-#include "TwoWheelAPS.hpp"
+#include "TwoWheelAps.hpp"
 
 #include "common.hpp"
 
-TwoWheelAPS::TwoWheelAPS(EncoderSetup x_setup, EncoderSetup y_setup, ApsSetup wheel_setup, ImuSetup imu_setup)
+TwoWheelAps::TwoWheelAps(EncoderSetup x_setup, EncoderSetup y_setup, ApsSetup wheel_setup, ImuSetup imu_setup)
 {
     this->x_encoder = new pros::ADIEncoder(x_setup.top, x_setup.bottom, x_setup.reversed);
     this->y_encoder = new pros::ADIEncoder(y_setup.top, y_setup.bottom, y_setup.reversed);
@@ -27,13 +27,13 @@ TwoWheelAPS::TwoWheelAPS(EncoderSetup x_setup, EncoderSetup y_setup, ApsSetup wh
     this->y_wheel_travel = wheel_setup.left_wheel_travel;
 }
 
-TwoWheelAPS::~TwoWheelAPS()
+TwoWheelAps::~TwoWheelAps()
 {
     delete this->x_encoder;
     delete this->y_encoder;
 }
 
-void TwoWheelAPS::set_pose(Pose pose)
+void TwoWheelAps::set_pose(Pose pose)
 {
     if (this->disabled)
         return;
@@ -56,7 +56,7 @@ void TwoWheelAPS::set_pose(Pose pose)
     pose_data_mutex.give();
 }
 
-void TwoWheelAPS::update()
+void TwoWheelAps::update()
 {
     if (this->disabled)
         return;

@@ -1,7 +1,5 @@
 /* home.vn2007@gmail.com - 2023 */
 
-/* NOTE: This is a pure abstract class, the APS.cpp file shouldn't exist */
-
 #pragma once
 
 #include "main.h"
@@ -46,7 +44,7 @@ struct EncoderReadings {
     double strafe_enc = 0.0;
 };
 
-class APS
+class Aps
 {
 public:
     virtual void set_pose(Pose pose = {NO_CHANGE, NO_CHANGE, NO_CHANGE}) = 0;

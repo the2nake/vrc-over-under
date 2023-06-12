@@ -2,7 +2,7 @@
 
 #include "TankDriveController.hpp"
 
-TankDriveController::TankDriveController(TankDrive *drive, APS *aps)
+TankDriveController::TankDriveController(TankDrive *drive, Aps *aps)
 {
     this->drive = drive;
     this->aps = aps;

@@ -4,6 +4,7 @@
 
 - Classes and structs will begin with an uppercase letter
 - All words in a class will be capitalised
+- Abbereviations will get only one capital letter in classes
 - Methods, functions, and arguments should use snake_case
 - Macros should use SCREAMING_SNAKE_CASE
 - Spelling should use English (UK)

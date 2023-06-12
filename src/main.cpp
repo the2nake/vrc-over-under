@@ -4,9 +4,9 @@
 
 #include "portDefinitions.h"
 #include "TankDrive.hpp"
-#include "APS.hpp"
-#include "TwoWheelAPS.hpp"
-#include "GUI.hpp"
+#include "Aps.hpp"
+#include "TwoWheelAps.hpp"
+#include "Gui.hpp"
 
 #include <chrono>
 
@@ -26,7 +26,7 @@ namespace shared
     TankDrive *drivetrain;
 
     pros::Imu *imu;
-    APS *aps;
+    Aps *aps;
 
     int aps_update_hz;
 };
@@ -83,7 +83,7 @@ void initialize()
         pros::delay(100);
     }
 
-    aps = new TwoWheelAPS({X_ENCODER_PORT_TOP, X_ENCODER_PORT_BOTTOM, X_ENCODER_REVERSED}, {Y_ENCODER_PORT_TOP, Y_ENCODER_PORT_BOTTOM, Y_ENCODER_REVERSED},
+    aps = new TwoWheelAps({X_ENCODER_PORT_TOP, X_ENCODER_PORT_BOTTOM, X_ENCODER_REVERSED}, {Y_ENCODER_PORT_TOP, Y_ENCODER_PORT_BOTTOM, Y_ENCODER_REVERSED},
                           aps_config, {imu, imu_multiplier, imu_drift});
 
     pros::Task aps_update{aps_update_handler};

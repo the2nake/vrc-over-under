@@ -4,19 +4,19 @@
 
 #include "main.h"
 #include "TankDrive.hpp"
-#include "APS.hpp"
+#include "Aps.hpp"
 
 class TankDriveController
 {
 public:
-    TankDriveController(TankDrive *drive, APS *aps);
+    TankDriveController(TankDrive *drive, Aps *aps);
     ~TankDriveController();
 
     bool is_disabled() { return this->disabled; }
 
 private:
     TankDrive *drive = nullptr;
-    APS *aps = nullptr;
+    Aps *aps = nullptr;
 
     bool disabled = false;
 };

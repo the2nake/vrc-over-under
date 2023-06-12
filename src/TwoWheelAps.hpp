@@ -3,15 +3,15 @@
 #pragma once
 
 #include "main.h"
-#include "APS.hpp"
+#include "Aps.hpp"
 
 #include <atomic>
 
-class TwoWheelAPS : public APS
+class TwoWheelAps : public Aps
 {
 public:
-    TwoWheelAPS(EncoderSetup x_setup, EncoderSetup y_setup, ApsSetup wheel_setup, ImuSetup imu_setup);
-    ~TwoWheelAPS();
+    TwoWheelAps(EncoderSetup x_setup, EncoderSetup y_setup, ApsSetup wheel_setup, ImuSetup imu_setup);
+    ~TwoWheelAps();
 
     void set_pose(Pose pose) override;
     void update() override;
