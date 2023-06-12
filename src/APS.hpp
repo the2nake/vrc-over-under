@@ -40,6 +40,12 @@ struct ImuSetup
     double drift = 0.0;      // drift in degrees per millisecond
 };
 
+struct EncoderReadings {
+    double left_enc = 0.0;
+    double right_enc = 0.0;
+    double strafe_enc = 0.0;
+};
+
 // TODO: investigate abstract class and why there is an undefined reference to typeinfo for APS when the functions lack a definition
 
 class APS
@@ -48,5 +54,6 @@ public:
     virtual void set_pose(Pose pose = {NO_CHANGE, NO_CHANGE, NO_CHANGE}) = 0;
     virtual void update() = 0;
     virtual Pose get_pose() = 0;
+    virtual EncoderReadings get_encoder_readings() = 0;
     virtual bool is_disabled() = 0;
 };

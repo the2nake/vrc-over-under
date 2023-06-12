@@ -55,11 +55,11 @@ void initialize()
         220.0,
         0.0, // not used
         220.0,
-        -86.2,
+        -85.773987718,
         0.0, // not used
-        134.5};
+        117.355549871};
 
-    double imu_multiplier = 1.0;
+    double imu_multiplier = 0.998673983;
     double imu_drift = 0.0;
 
     //  ===== END CONFIG =====
@@ -80,7 +80,7 @@ void initialize()
     imu->reset();
     while (imu->is_calibrating())
     {
-        pros::delay(10);
+        pros::delay(100);
     }
 
     aps = new TwoWheelAPS({X_ENCODER_PORT_TOP, X_ENCODER_PORT_BOTTOM, X_ENCODER_REVERSED}, {Y_ENCODER_PORT_TOP, Y_ENCODER_PORT_BOTTOM, Y_ENCODER_REVERSED},
@@ -90,6 +90,7 @@ void initialize()
 
     program_running = true;
     pros::delay(250);
+    aps->set_pose({0.0, 0.0, 0.0});
 }
 
 void disabled() {}
@@ -141,7 +142,9 @@ void opcontrol()
         }
 
         auto pose = aps->get_pose();
-        pros::screen::print(TEXT_MEDIUM, 0, "%f %f %f", pose.x, pose.y, pose.heading);
+        auto encoder = aps->get_encoder_readings();
+        pros::screen::print(TEXT_MEDIUM, 0, "(%.2f %.2f), theta: %.2f", pose.x, pose.y, pose.heading);
+        pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d %d", (int)(std::floor(encoder.strafe_enc)), (int)(std::floor(encoder.left_enc)));
 
         if (points.size() > 100)
         {

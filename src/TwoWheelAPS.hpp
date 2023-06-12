@@ -16,6 +16,10 @@ public:
     void set_pose(Pose pose) override;
     void update() override;
     Pose get_pose() override { return {this->x.load(), this->y.load(), this->heading.load()}; }
+    EncoderReadings get_encoder_readings()
+    {
+        return {(double)this->y_encoder->get_value(), 0.0, (double)this->x_encoder->get_value()};
+    }
     bool is_disabled() override { return this->disabled; }
 
 private:
