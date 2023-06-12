@@ -46,8 +46,6 @@ struct EncoderReadings {
     double strafe_enc = 0.0;
 };
 
-// TODO: investigate abstract class and why there is an undefined reference to typeinfo for APS when the functions lack a definition
-
 class APS
 {
 public:
