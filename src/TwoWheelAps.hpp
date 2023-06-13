@@ -4,13 +4,13 @@
 
 #include "main.h"
 #include "Aps.hpp"
-
 #include <atomic>
 
 class TwoWheelAps : public Aps
 {
+    friend class TwoWheelApsBuilder;
+
 public:
-    TwoWheelAps(EncoderSetup x_setup, EncoderSetup y_setup, ApsSetup wheel_setup, ImuSetup imu_setup);
     ~TwoWheelAps();
 
     void set_pose(Pose pose) override;
@@ -20,9 +20,11 @@ public:
     {
         return {(double)this->y_encoder->get_value(), 0.0, (double)this->x_encoder->get_value()};
     }
-    bool is_disabled() override { return this->disabled; }
 
 private:
+    // use the builder class lmao
+    TwoWheelAps() {}
+
     pros::ADIEncoder *x_encoder = nullptr;
     pros::ADIEncoder *y_encoder = nullptr;
 
@@ -42,8 +44,6 @@ private:
     double x_enc_val = 0.0;
     double y_enc_val = 0.0;
     double imu_heading = 0.0;
-
-    bool disabled = false;
 
     pros::Mutex pose_data_mutex;
 };

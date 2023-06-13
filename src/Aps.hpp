@@ -51,5 +51,4 @@ public:
     virtual void update() = 0;
     virtual Pose get_pose() = 0;
     virtual EncoderReadings get_encoder_readings() = 0;
-    virtual bool is_disabled() = 0;
 };

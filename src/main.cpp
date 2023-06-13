@@ -6,6 +6,7 @@
 #include "TankDrive.hpp"
 #include "Aps.hpp"
 #include "TwoWheelAps.hpp"
+#include "TwoWheelApsBuilder.hpp"
 #include "Gui.hpp"
 
 #include <chrono>
@@ -83,8 +84,12 @@ void initialize()
         pros::delay(100);
     }
 
-    aps = new TwoWheelAps({X_ENCODER_PORT_TOP, X_ENCODER_PORT_BOTTOM, X_ENCODER_REVERSED}, {Y_ENCODER_PORT_TOP, Y_ENCODER_PORT_BOTTOM, Y_ENCODER_REVERSED},
-                          aps_config, {imu, imu_multiplier, imu_drift});
+    aps = TwoWheelApsBuilder()
+              .with_encoders({X_ENCODER_PORT_TOP, X_ENCODER_PORT_BOTTOM, X_ENCODER_REVERSED},
+                             {Y_ENCODER_PORT_TOP, Y_ENCODER_PORT_BOTTOM, Y_ENCODER_REVERSED})
+              .with_imu({imu, imu_multiplier, imu_drift})
+              .with_config(aps_config)
+              .build();
 
     pros::Task aps_update{aps_update_handler};
 

@@ -4,29 +4,6 @@
 
 #include "common.hpp"
 
-TwoWheelAps::TwoWheelAps(EncoderSetup x_setup, EncoderSetup y_setup, ApsSetup wheel_setup, ImuSetup imu_setup)
-{
-    this->x_encoder = new pros::ADIEncoder(x_setup.top, x_setup.bottom, x_setup.reversed);
-    this->y_encoder = new pros::ADIEncoder(y_setup.top, y_setup.bottom, y_setup.reversed);
-
-    if (errno == ENXIO || errno == ENODEV)
-        this->disabled = true;
-
-    // if invalid imu address or imu is too unreliable
-    if (imu_setup.imu == nullptr || std::abs(imu_setup.multiplier) < 0.1)
-        this->disabled = true;
-
-    this->imu = imu_setup.imu;
-    this->imu_drift = imu_setup.drift;
-    this->imu_muliplier = imu_setup.multiplier;
-
-    this->x_wheel_placement = wheel_setup.strafe_wheel_distance;
-    this->y_wheel_placement = -wheel_setup.left_wheel_distance;
-
-    this->x_wheel_travel = wheel_setup.strafe_wheel_travel;
-    this->y_wheel_travel = wheel_setup.left_wheel_travel;
-}
-
 TwoWheelAps::~TwoWheelAps()
 {
     delete this->x_encoder;
@@ -35,8 +12,6 @@ TwoWheelAps::~TwoWheelAps()
 
 void TwoWheelAps::set_pose(Pose pose)
 {
-    if (this->disabled)
-        return;
     while (!this->pose_data_mutex.take(5))
         ;
 
@@ -58,9 +33,6 @@ void TwoWheelAps::set_pose(Pose pose)
 
 void TwoWheelAps::update()
 {
-    if (this->disabled)
-        return;
-
     double prev_x_enc_val = this->x_enc_val;
     double prev_y_enc_val = this->y_enc_val;
     double prev_imu = this->imu_heading;
