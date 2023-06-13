@@ -74,7 +74,9 @@ void initialize()
     right_motor_2 = new pros::Motor(RIGHT_DRIVE_PORT_2, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
     right_motor_top = new pros::Motor(RIGHT_DRIVE_PORT_TOP, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
 
-    drivetrain = new TankDrive({left_motor_1, left_motor_2, left_motor_top}, {right_motor_1, right_motor_2, right_motor_top}, 0.8, 220.0);
+    std::vector<pros::Motor *> left_motors = {left_motor_1, left_motor_2, left_motor_top};
+    std::vector<pros::Motor *> right_motors = {right_motor_1, right_motor_2, right_motor_top};
+    drivetrain = new TankDrive(left_motors, right_motors, 0.8, 220.0);
     drivetrain->set_brake_mode(MOTOR_BRAKE_COAST);
 
     imu = new pros::Imu(IMU_PORT);
