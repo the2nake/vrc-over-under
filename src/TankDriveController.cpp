@@ -11,5 +11,5 @@ TankDriveController::TankDriveController(TankDrive *drive, Aps *aps)
 }
 
 TankDriveController::~TankDriveController()
-{ // NOTE: will need to destroy created PIDController and RamseteController objects
+{ // NOTE: will need to destroy created Controller objects
 }
