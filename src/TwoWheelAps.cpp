@@ -57,17 +57,46 @@ void TwoWheelAps::update()
         d_x = 2 * sin_deg(d_heading / 2.0) * (d_x_enc / in_radians(d_heading) + x_wheel_placement);
     }
 
-    double new_heading = this->heading + d_heading;
+    // {d_x, d_y, d_heading} are the measurements to be fed into the filter
+    // this ensures compatibility with a filter that simply sums everything up and filters the global position
+    // as well as a filter that filters for the global position indirectly
 
-    // use a rotation matrix
-    auto d_g_x = d_x * cos_deg(new_heading) + d_y * sin_deg(new_heading);
-    auto d_g_y = -d_x * sin_deg(new_heading) + d_y * cos_deg(new_heading);
+    if (this->filter != nullptr)
+    {
+        // NOTE: the Aps does not actually need to know how to set up the filter (i.e. it doesn't need knowledge
+        // of filter-specific parameters; all it does is tell the filter what was measured: the three values above)
 
-    while (!this->pose_data_mutex.take(5))
-        ;
+        // push values to filter
+        Eigen::Matrix<double, 3, 1> measurements = {d_x, d_y, d_heading};
+        this->filter->correct_prediction(measurements);
+        // get values from filter
+        Eigen::VectorXd state = this->filter->get_state();
+        // store values
+        while (!this->pose_data_mutex.take(5))
+            ;
 
-    this->x = this->x + d_g_x;
-    this->y = this->y + d_g_y;
-    this->heading = mod(new_heading, 360.0);
-    this->pose_data_mutex.give();
+        // the state matrix is {x, y, theta, dx, dy, dtheta, d2x, d2y, d2theta}, in the field frame of reference
+        this->x = this->x + state(0);
+        this->y = this->y + state(1);
+        this->heading = mod(state(2), 360.0);
+
+        this->pose_data_mutex.give();
+        }
+    else
+    {
+        // use a rotation matrix
+        double new_heading = this->heading + d_heading;
+        auto d_g_x = d_x * cos_deg(new_heading) + d_y * sin_deg(new_heading);
+        auto d_g_y = -d_x * sin_deg(new_heading) + d_y * cos_deg(new_heading);
+
+        // mutex for thread safety
+        while (!this->pose_data_mutex.take(5))
+            ;
+
+        this->x = this->x + d_g_x;
+        this->y = this->y + d_g_y;
+        this->heading = mod(new_heading, 360.0);
+
+        this->pose_data_mutex.give();
+    }
 }

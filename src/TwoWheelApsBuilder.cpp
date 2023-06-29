@@ -36,8 +36,16 @@ TwoWheelApsBuilder &TwoWheelApsBuilder::with_imu(ImuSetup imu_setup)
     return *this;
 }
 
-TwoWheelAps *TwoWheelApsBuilder::build() {
-    if (this->disabled || this->imu == nullptr || this->x_encoder == nullptr || this->y_encoder == nullptr || !aps_setup_given) {
+TwoWheelApsBuilder &TwoWheelApsBuilder::with_filter(Filter *filter)
+{
+    this->filter = filter;
+    return *this;
+}
+
+TwoWheelAps *TwoWheelApsBuilder::build()
+{
+    if (this->disabled || this->imu == nullptr || this->x_encoder == nullptr || this->y_encoder == nullptr || !aps_setup_given)
+    {
         return nullptr;
     }
 
@@ -49,10 +57,12 @@ TwoWheelAps *TwoWheelApsBuilder::build() {
     aps->y_wheel_placement = this->y_wheel_placement;
     aps->x_wheel_travel = this->x_wheel_travel;
     aps->y_wheel_travel = this->y_wheel_travel;
-    
+
     aps->imu = this->imu;
     aps->imu_drift = this->imu_drift;
     aps->imu_muliplier = this->imu_muliplier;
+
+    aps->filter = this->filter;
 
     return aps;
 }

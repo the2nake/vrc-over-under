@@ -3,6 +3,7 @@
 #pragma once
 
 #include "TwoWheelAps.hpp"
+#include "Filter.hpp"
 
 class TwoWheelApsBuilder
 {
@@ -10,7 +11,7 @@ public:
     TwoWheelApsBuilder &with_encoders(EncoderSetup x_setup, EncoderSetup y_setup);
     TwoWheelApsBuilder &with_config(ApsSetup aps_setup);
     TwoWheelApsBuilder &with_imu(ImuSetup imu_setup);
-    TwoWheelApsBuilder &with_filter() { return *this; }
+    TwoWheelApsBuilder &with_filter(Filter* filter);
     TwoWheelAps *build();
 
 private:
@@ -26,6 +27,8 @@ private:
     pros::Imu *imu = nullptr;
     double imu_muliplier = 1.0;
     double imu_drift = 0.0;
+
+    Filter* filter = nullptr;
 
     bool disabled = false;
 };

@@ -4,6 +4,7 @@
 
 #include "main.h"
 #include "Aps.hpp"
+#include "Filter.hpp"
 #include <atomic>
 
 class TwoWheelAps : public Aps
@@ -46,4 +47,6 @@ private:
     double imu_heading = 0.0;
 
     pros::Mutex pose_data_mutex;
+
+    Filter* filter = nullptr;
 };
