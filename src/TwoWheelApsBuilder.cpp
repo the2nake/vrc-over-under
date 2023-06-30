@@ -63,6 +63,7 @@ TwoWheelAps *TwoWheelApsBuilder::build()
     aps->imu_muliplier = this->imu_muliplier;
 
     aps->filter = this->filter;
+    aps->last_update_time = std::chrono::high_resolution_clock::now();
 
     return aps;
 }

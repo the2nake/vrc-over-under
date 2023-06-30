@@ -6,6 +6,7 @@
 #include "Aps.hpp"
 #include "Filter.hpp"
 #include <atomic>
+#include <chrono>
 
 class TwoWheelAps : public Aps
 {
@@ -42,6 +43,9 @@ private:
     std::atomic<double> y = 0.0;
     std::atomic<double> heading = 0.0;
 
+    std::atomic<double> dx = 0.0; // in mm/s
+    std::atomic<double> dy = 0.0; // in mm/s
+
     double x_enc_val = 0.0;
     double y_enc_val = 0.0;
     double imu_heading = 0.0;
@@ -49,4 +53,6 @@ private:
     pros::Mutex pose_data_mutex;
 
     Filter* filter = nullptr;
+    
+    std::chrono::high_resolution_clock::time_point last_update_time;
 };

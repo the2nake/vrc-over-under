@@ -61,6 +61,9 @@ void TwoWheelAps::update()
     // this ensures compatibility with a filter that simply sums everything up and filters the global position
     // as well as a filter that filters for the global position indirectly
 
+    auto now = std::chrono::high_resolution_clock::now();
+    double time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->last_update_time).count() / 1000.0; // in seconds
+
     if (this->filter != nullptr)
     {
         // NOTE: the Aps does not actually need to know how to set up the filter (i.e. it doesn't need knowledge
@@ -80,6 +83,9 @@ void TwoWheelAps::update()
         this->y = this->y + state(1);
         this->heading = mod(state(2), 360.0);
 
+        this->dx = state(3);
+        this->dy = state(4);
+
         this->pose_data_mutex.give();
         }
     else
@@ -97,6 +103,11 @@ void TwoWheelAps::update()
         this->y = this->y + d_g_y;
         this->heading = mod(new_heading, 360.0);
 
+        this->dx = d_g_x / time_elapsed;
+        this->dy = d_g_y / time_elapsed; 
+
         this->pose_data_mutex.give();
     }
+
+    this->last_update_time = now;
 }
