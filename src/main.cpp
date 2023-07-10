@@ -87,13 +87,11 @@ void initialize()
         pros::delay(100);
     }
 
-    KalmanFilter aps_filter({}, {});
     aps = TwoWheelApsBuilder()
               .with_encoders({X_ENCODER_PORT_TOP, X_ENCODER_PORT_BOTTOM, X_ENCODER_REVERSED},
                              {Y_ENCODER_PORT_TOP, Y_ENCODER_PORT_BOTTOM, Y_ENCODER_REVERSED})
               .with_imu({imu, imu_multiplier, imu_drift})
               .with_config(aps_config)
-              // .with_filter(&aps_filter)
               .build();
 
     pros::Task aps_update{aps_update_handler};
