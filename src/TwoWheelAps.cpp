@@ -46,7 +46,7 @@ void TwoWheelAps::update()
     double d_heading = shorter_turn(prev_imu, this->imu_heading, 360.0) * imu_muliplier;
 
     double d_y = 0, d_x = 0;
-    if (d_heading == 0)
+    if (std::abs(d_heading) < 0.01)
     {
         d_x = d_x_enc;
         d_y = d_y_enc;
@@ -68,6 +68,8 @@ void TwoWheelAps::update()
     {
         // NOTE: the Aps does not actually need to know how to set up the filter (i.e. it doesn't need knowledge
         // of filter-specific parameters; all it does is tell the filter what was measured: the three values above)
+
+        // TODO: create an option in the builder class to switch bettern passing rotated and unrotated vectors
 
         // push values to filter
         Eigen::Matrix<double, 3, 1> measurements = {d_x, d_y, d_heading};

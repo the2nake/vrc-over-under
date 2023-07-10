@@ -58,6 +58,23 @@ void TankDrive::drive(double fwd, double rot, bool reverse)
     }
 }
 
+void TankDrive::drive_tank(double left_vel, double right_vel)
+{
+    scale_down_magnitude(left_vel, right_vel, 1.0);
+
+    for (auto motor : this->left_motors)
+    {
+        //motor->move_voltage(12000 * left_vel);
+        motor->move_velocity(600 * left_vel);
+    }
+
+    for (auto motor : this->right_motors)
+    {
+        //motor->move_voltage(12000 * right_vel);
+        motor->move_velocity(600 * right_vel);
+    }
+}
+
 void TankDrive::brake()
 {
     for (auto motor : this->left_motors)

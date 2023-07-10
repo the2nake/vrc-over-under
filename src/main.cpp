@@ -8,6 +8,7 @@
 #include "TwoWheelAps.hpp"
 #include "TwoWheelApsBuilder.hpp"
 #include "Gui.hpp"
+#include "PurePursuitController.hpp"
 
 #include <chrono>
 
@@ -76,7 +77,7 @@ void initialize()
 
     std::vector<pros::Motor *> left_motors = {left_motor_1, left_motor_2, left_motor_top};
     std::vector<pros::Motor *> right_motors = {right_motor_1, right_motor_2, right_motor_top};
-    drivetrain = new TankDrive(left_motors, right_motors, 0.8, 220.0);
+    drivetrain = new TankDrive(left_motors, right_motors, 0.8, 220.0, 316.5, 228.6);
     drivetrain->set_brake_mode(MOTOR_BRAKE_COAST);
 
     imu = new pros::Imu(IMU_PORT);
@@ -86,11 +87,13 @@ void initialize()
         pros::delay(100);
     }
 
+    KalmanFilter aps_filter({}, {});
     aps = TwoWheelApsBuilder()
               .with_encoders({X_ENCODER_PORT_TOP, X_ENCODER_PORT_BOTTOM, X_ENCODER_REVERSED},
                              {Y_ENCODER_PORT_TOP, Y_ENCODER_PORT_BOTTOM, Y_ENCODER_REVERSED})
               .with_imu({imu, imu_multiplier, imu_drift})
               .with_config(aps_config)
+              // .with_filter(&aps_filter)
               .build();
 
     pros::Task aps_update{aps_update_handler};
@@ -104,7 +107,37 @@ void disabled() {}
 
 void competition_initialize() {}
 
-void autonomous() {}
+void autonomous()
+{
+    PurePursuitController *ppc = new PurePursuitController(shared::drivetrain, shared::aps);
+    gui::Graph *graph = new gui::Graph();
+    graph->set_display_region({244, 4, 232, 232});
+    graph->set_window(-1000.0, -1000.0, 2000.0, 2000.0);
+    graph->point_width = 3;
+    std::vector<Point<double>> points = {{2.0, 2.0}};
+
+    ppc->set_path({{0.0, 0.0}, {0.0, 600.0}, {600.0, 600.0}}, 450.0);
+    ppc->set_motion_limits(shared::drivetrain->get_max_lin_vel() * 2, 20.0);
+    ppc->set_gains(1.0, 10.0);
+    ppc->follow_path_async();
+
+    while (!ppc->is_motion_completed())
+    {
+        auto pose = aps->get_pose();
+        auto readings = aps->get_encoder_readings();
+        pros::screen::print(TEXT_MEDIUM, 0, "(%.2f %.2f), theta: %.2f", pose.x, pose.y, pose.heading);
+        pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d %d", (int)(std::floor(readings.strafe_enc)), (int)(std::floor(readings.left_enc)));
+
+        points.push_back({pose.x, pose.y});
+
+        graph->draw();
+        graph->plot(points);
+
+        pros::delay(20);
+    }
+
+    pros::screen::print(TEXT_MEDIUM, 2, "motion completed");
+}
 
 void opcontrol()
 {
@@ -149,9 +182,9 @@ void opcontrol()
         }
 
         auto pose = aps->get_pose();
-        auto encoder = aps->get_encoder_readings();
+        auto readings = aps->get_encoder_readings();
         pros::screen::print(TEXT_MEDIUM, 0, "(%.2f %.2f), theta: %.2f", pose.x, pose.y, pose.heading);
-        pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d %d", (int)(std::floor(encoder.strafe_enc)), (int)(std::floor(encoder.left_enc)));
+        pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d %d", (int)(std::floor(readings.strafe_enc)), (int)(std::floor(readings.left_enc)));
 
         if (points.size() > 100)
         {
