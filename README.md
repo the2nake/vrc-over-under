@@ -10,13 +10,13 @@ This contains code for the VRC 2023-24 Over Under. The code will be updated over
 - A minimal class for controlling a 6 motor tank drive
 - A rudimentary operator control loop
 - Odometry with 2 tracking wheels and inertial sensor
+- Pure pursuit for a set of paths with constrained acceleration
 
 ### Upcoming
 
 - Extended Kalman filter for inertial sensor output and odometry output
 - PID control for drivetrain to maintain linear velocity
 - Path generation from cubic Hermite splines
-- Pure pursuit for a set of paths with constrained acceleration
 - Higher accuracy drivetrain motion with pure open loop control
   - Will attempt an internal kinematic model
   - The idea is to estimate the effect of inertia and friction
