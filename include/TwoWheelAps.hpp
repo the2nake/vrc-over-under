@@ -53,6 +53,7 @@ private:
     pros::Mutex pose_data_mutex;
 
     Filter* filter = nullptr;
+    bool pass_local_coordinates = true;
     
     std::chrono::high_resolution_clock::time_point last_update_time;
 };

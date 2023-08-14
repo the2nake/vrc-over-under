@@ -36,9 +36,10 @@ TwoWheelApsBuilder &TwoWheelApsBuilder::with_imu(ImuSetup imu_setup)
     return *this;
 }
 
-TwoWheelApsBuilder &TwoWheelApsBuilder::with_filter(Filter *filter)
+TwoWheelApsBuilder &TwoWheelApsBuilder::with_filter(Filter *filter, bool pass_local_coords)
 {
     this->filter = filter;
+    this->pass_local_coordinates = pass_local_coords;
     return *this;
 }
 
@@ -63,6 +64,7 @@ TwoWheelAps *TwoWheelApsBuilder::build()
     aps->imu_muliplier = this->imu_muliplier;
 
     aps->filter = this->filter;
+    aps->pass_local_coordinates = this->pass_local_coordinates;
     aps->last_update_time = std::chrono::high_resolution_clock::now();
 
     return aps;

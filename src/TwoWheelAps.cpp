@@ -57,22 +57,27 @@ void TwoWheelAps::update()
         d_x = 2 * sin_deg(d_heading / 2.0) * (d_x_enc / in_radians(d_heading) + x_wheel_placement);
     }
 
-    // {d_x, d_y, d_heading} are the measurements to be fed into the filter
-    // this ensures compatibility with a filter that simply sums everything up and filters the global position
-    // as well as a filter that filters for the global position indirectly
-
     auto now = std::chrono::high_resolution_clock::now();
     double time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - this->last_update_time).count() / 1000.0; // in seconds
+
+    // use a rotation matrix
+    double new_heading = this->heading + d_heading;
+    auto d_g_x = d_x * cos_deg(new_heading) + d_y * sin_deg(new_heading);
+    auto d_g_y = -d_x * sin_deg(new_heading) + d_y * cos_deg(new_heading);
 
     if (this->filter != nullptr)
     {
         // NOTE: the Aps does not actually need to know how to set up the filter (i.e. it doesn't need knowledge
         // of filter-specific parameters; all it does is tell the filter what was measured: the three values above)
 
-        // TODO: create an option in the builder class to switch bettern passing rotated and unrotated vectors
-
         // push values to filter
-        Eigen::Matrix<double, 3, 1> measurements = {d_x, d_y, d_heading};
+        Eigen::Matrix<double, 3, 1> measurements;
+        if (this->pass_local_coordinates)
+        {
+            measurements = {d_x, d_y, d_heading};
+        } else {
+            measurements = {d_g_x, d_g_y, d_heading};
+        }
         this->filter->correct_prediction(measurements);
         // get values from filter
         Eigen::VectorXd state = this->filter->get_state();
@@ -89,14 +94,9 @@ void TwoWheelAps::update()
         this->dy = state(4);
 
         this->pose_data_mutex.give();
-        }
+    }
     else
     {
-        // use a rotation matrix
-        double new_heading = this->heading + d_heading;
-        auto d_g_x = d_x * cos_deg(new_heading) + d_y * sin_deg(new_heading);
-        auto d_g_y = -d_x * sin_deg(new_heading) + d_y * cos_deg(new_heading);
-
         // mutex for thread safety
         while (!this->pose_data_mutex.take(5))
             ;
@@ -106,7 +106,7 @@ void TwoWheelAps::update()
         this->heading = mod(new_heading, 360.0);
 
         this->dx = d_g_x / time_elapsed;
-        this->dy = d_g_y / time_elapsed; 
+        this->dy = d_g_y / time_elapsed;
 
         this->pose_data_mutex.give();
     }

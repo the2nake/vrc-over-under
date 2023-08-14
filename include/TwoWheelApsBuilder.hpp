@@ -11,7 +11,7 @@ public:
     TwoWheelApsBuilder &with_encoders(EncoderSetup x_setup, EncoderSetup y_setup);
     TwoWheelApsBuilder &with_config(ApsSetup aps_setup);
     TwoWheelApsBuilder &with_imu(ImuSetup imu_setup);
-    TwoWheelApsBuilder &with_filter(Filter* filter);
+    TwoWheelApsBuilder &with_filter(Filter* filter, bool pass_local_coordinates);
     TwoWheelAps *build();
 
 private:
@@ -29,6 +29,7 @@ private:
     double imu_drift = 0.0;
 
     Filter* filter = nullptr;
+    bool pass_local_coordinates = true;
 
     bool disabled = false;
 };
