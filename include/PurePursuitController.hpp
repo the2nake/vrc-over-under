@@ -4,7 +4,6 @@
 
 #include "TankDrive.hpp"
 #include "Aps.hpp"
-#include "Spline.hpp"
 #include "common.hpp"
 
 #include <vector>
@@ -26,7 +25,6 @@ public:
 
     void set_path(std::vector<PurePursuitWaypoint> points, double look_ahead);
     // resolution is number of points to sample aside from start and finish. 0 resolution will sample (8 * waypoints) points
-    void set_path(Spline *path, double look_ahead, int resolution = 0);
     // velocity here refers to the velocity along the arc that pure pursuit drives the drivetrain on
     void set_motion_limits(double max_acceleration, double accuracy);
     void set_gains(double lin_kP, double rot_kP);
