@@ -19,7 +19,7 @@ namespace shared
 
     bool program_running;
     int program_update_hz;
-    double program_delay_per_cycle;
+    int program_delay_per_cycle;
 
     pros::Motor *drive_left_1;
     pros::Motor *drive_left_2;
@@ -76,9 +76,9 @@ void initialize()
 {
     // ===== CONFIGURATION =====
 
-    training_mode = false;
+    training_mode = true;
 
-    program_update_hz = 50;
+    program_update_hz = 60;
     aps_update_hz = 100;
 
     ApsSetup aps_config = {
@@ -98,7 +98,7 @@ void initialize()
 
     // ===== CONTROLS =====
 
-    mult_stick_x = 0.75;
+    mult_stick_x = 0.8;
     mult_stick_y = 1.0;
 
     intake_keybind = DIGITAL_R2;
@@ -107,7 +107,7 @@ void initialize()
 
     //  ===== END CONFIG =====
 
-    program_delay_per_cycle = std::max(1000.0 / program_update_hz, 5.0); // wait no lower than 5 ms
+    program_delay_per_cycle = (int)std::floor(std::max(1000.0 / program_update_hz, 5.0));
 
     drive_left_1 = new pros::Motor(LEFT_DRIVE_PORT_1, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
     drive_left_2 = new pros::Motor(LEFT_DRIVE_PORT_2, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
@@ -135,7 +135,7 @@ void initialize()
     imu->reset();
     while (imu->is_calibrating())
     {
-        pros::delay(100);
+        pros::delay(50);
     }
 
     // AbstractEncoder y_enc(drive_left_1);
@@ -148,10 +148,10 @@ void initialize()
     //           .build();
 
     // pros::Task aps_update{aps_update_handler};
+    // pros::delay(250);
+    // aps->set_pose({0.0, 0.0, 0.0});
 
     program_running = true;
-    pros::delay(250);
-    // aps->set_pose({0.0, 0.0, 0.0});
 }
 
 void disabled() {}
@@ -177,7 +177,8 @@ void autonomous()
         auto pose = aps->get_pose();
         auto readings = aps->get_encoder_readings();
         pros::screen::print(TEXT_MEDIUM, 0, "(%.2f %.2f), theta: %.2f", pose.x, pose.y, pose.heading);
-        pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d %d", (int)(std::floor(readings.strafe_enc)), (int)(std::floor(readings.left_enc)));
+        pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d %d", (int)(std::floor(readings.strafe_enc)),
+                                                               (int)(std::floor(readings.left_enc)));
 
         points.push_back({pose.x, pose.y});
 
@@ -209,7 +210,9 @@ void intake_control(pros::Controller *controller)
         {
             intake::intake->brake();
         }
-    } else {
+    }
+    else
+    {
         intake::intake->brake();
     }
 }
@@ -308,9 +311,16 @@ void opcontrol()
         }
         else
         {
-            if (training_mode && (std::abs(right_stick_y) > 0.75 || std::abs(left_stick_x) > 0.75))
+            if (training_mode)
             {
-                drivetrain->brake();
+                if (std::abs(right_stick_y) > 0.75 || std::abs(left_stick_x) > 0.75)
+                {
+                    drivetrain->brake();
+                }
+                else
+                {
+                    drivetrain->drive(right_stick_y, left_stick_x, false);
+                }
             }
             else
             {
@@ -338,7 +348,7 @@ void opcontrol()
         graph->plot(points);
         */
 
-        double cycle_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - cycle_start).count();
-        pros::delay(std::max(0.0, program_delay_per_cycle - cycle_time));
+        int cycle_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - cycle_start).count();
+        pros::delay(std::max(0, program_delay_per_cycle - cycle_time));
     }
 }
