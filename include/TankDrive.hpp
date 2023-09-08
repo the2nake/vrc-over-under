@@ -9,28 +9,45 @@
 
 class TankDrive
 {
-public:
-    TankDrive(std::vector<pros::Motor *> left_motors, std::vector<pros::Motor *> right_motors, double gear_ratio = 1.0, double wheel_travel = 220.0, double track_width = 0.0, double wheelbase = 0.0);
-    ~TankDrive();
+    friend class TankDriveBuilder;
 
-    void drive(double fwd, double rot = 0.0, bool reverse = false);
-    void drive_tank(double left_vel, double right_vel);
+public:
+    void drive(double fwd, double rot = 0.0, bool rev = false, bool ignore_limits = false);
+    void drive_tank(double left, double right, bool ignore_limits = false);
     void brake();
 
     void set_brake_mode(pros::motor_brake_mode_e_t mode);
+    void set_accel_limit(double linear = 0.0, double rotational = 0.0);
 
     double get_track_width() { return this->track_width; }
     double get_wheelbase() { return this->wheelbase; }
     double get_wheel_travel() { return this->wheel_travel; }
 
-    double get_max_lin_vel() { return std::abs(this->wheel_travel * rpm_from_gearset(this->left_motors[0]->get_gearing()) * this->gear_ratio / 60.0); }
+    double get_max_lin_vel()
+    {
+        return std::abs(this->wheel_travel * rpm_from_gearset(this->left_motors[0]->get_gearing()) *
+                        this->gear_ratio / 60.0);
+    }
+
     double to_pct(double lin_vel) { return lin_vel / this->get_max_lin_vel(); }
 
 private:
+    TankDrive() {}
+
+    void limit_wheel_vels(double &left, double &right);
+    void update_wheel_velocities();
+
     std::vector<pros::Motor *> left_motors = {};
     std::vector<pros::Motor *> right_motors = {};
     double gear_ratio = 1.0;
     double wheel_travel = 220.0;
     double track_width = 0.0;
     double wheelbase = 0.0;
+
+    double lin_accel_limit = 0.0;
+    double rot_accel_limit = 0.0;
+
+    // velocities are true values, not targets
+    double left_vel = 0.0;
+    double right_vel = 0.0;
 };

@@ -5,6 +5,7 @@
 #include "common.hpp"
 #include "portDefinitions.h"
 #include "TankDrive.hpp"
+#include "TankDriveBuilder.hpp"
 #include "Aps.hpp"
 #include "TwoWheelAps.hpp"
 #include "TwoWheelApsBuilder.hpp"
@@ -112,13 +113,20 @@ void initialize()
     drive_left_1 = new pros::Motor(LEFT_DRIVE_PORT_1, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
     drive_left_2 = new pros::Motor(LEFT_DRIVE_PORT_2, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
     drive_left_top = new pros::Motor(LEFT_DRIVE_PORT_TOP, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
+
     drive_right_1 = new pros::Motor(RIGHT_DRIVE_PORT_1, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
     drive_right_2 = new pros::Motor(RIGHT_DRIVE_PORT_2, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
     drive_right_top = new pros::Motor(RIGHT_DRIVE_PORT_TOP, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
 
     std::vector<pros::Motor *> left_motors = {drive_left_1, drive_left_2, drive_left_top};
     std::vector<pros::Motor *> right_motors = {drive_right_1, drive_right_2, drive_right_top};
-    drivetrain = new TankDrive(left_motors, right_motors, 0.667, 220.0, 252.0, 254.0);
+    drivetrain = TankDriveBuilder()
+                     .with_left_motors(left_motors)
+                     .with_right_motors(right_motors)
+                     .with_gear_ratio(0.66667)
+                     .with_wheel_travel(260.0)
+                     .with_geometry(252.0, 254.0)
+                     .build();
     drivetrain->set_brake_mode(MOTOR_BRAKE_COAST);
 
     intake::intake = new pros::Motor(INTAKE_PORT, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
