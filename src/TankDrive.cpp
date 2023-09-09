@@ -9,9 +9,12 @@ void TankDrive::set_accel_limit(double lin, double rot)
     this->rot_accel_limit = std::abs(rot);
 }
 
-void TankDrive::limit_wheel_vels(double &left, double &right)
+void TankDrive::limit_wheel_vels(double &left, double &right, bool ignore_limits)
 {
     scale_down_magnitude(left, right, 1.0);
+
+    if (ignore_limits)
+        return;
 
     auto lin = (left + right) / 2.0;
     auto rot = (left - right) / 2.0;
@@ -55,7 +58,7 @@ void TankDrive::drive(double fwd, double rot, bool reverse, bool ignore_limits)
         right_vel *= -1;
     }
 
-    this->limit_wheel_vels(left_vel, right_vel);
+    this->limit_wheel_vels(left_vel, right_vel, ignore_limits);
 
     auto max_rpm = rpm_from_gearset(this->left_motors[0]->get_gearing());
     for (auto motor : this->left_motors)
@@ -75,7 +78,7 @@ void TankDrive::drive(double fwd, double rot, bool reverse, bool ignore_limits)
 
 void TankDrive::drive_tank(double left_vel, double right_vel, bool ignore_limits)
 {
-    this->limit_wheel_vels(left_vel, right_vel);
+    this->limit_wheel_vels(left_vel, right_vel, ignore_limits);
 
     auto max_rpm = rpm_from_gearset(this->left_motors[0]->get_gearing());
 

@@ -93,6 +93,10 @@ void initialize()
     double imu_multiplier = 0.998673983;
     double imu_drift = 0.0;
 
+    // limits are per second
+    double drive_accel_limit_lin = 3.0;
+    double drive_accel_limit_rot = 2.0;
+
     intake::velocity = 1.0;
     catapult::velocity = 0.6;
     catapult::loaded_threshold = 60;
@@ -128,6 +132,7 @@ void initialize()
                      .with_geometry(252.0, 254.0)
                      .build();
     drivetrain->set_brake_mode(MOTOR_BRAKE_COAST);
+    drivetrain->set_accel_limit(drive_accel_limit_lin * program_delay_per_cycle/1000.0, drive_accel_limit_rot * program_delay_per_cycle/1000.0);
 
     intake::intake = new pros::Motor(INTAKE_PORT, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
     intake::intake->set_brake_mode(MOTOR_BRAKE_COAST);

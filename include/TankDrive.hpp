@@ -34,7 +34,7 @@ public:
 private:
     TankDrive() {}
 
-    void limit_wheel_vels(double &left, double &right);
+    void limit_wheel_vels(double &left, double &right, bool ignore_kinematic_limits = false);
     void update_wheel_velocities();
 
     std::vector<pros::Motor *> left_motors = {};
