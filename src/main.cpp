@@ -77,9 +77,9 @@ void initialize()
 {
     // ===== CONFIGURATION =====
 
-    training_mode = true;
+    training_mode = false;
 
-    program_update_hz = 60;
+    program_update_hz = 50;
     aps_update_hz = 100;
 
     ApsSetup aps_config = {
@@ -93,17 +93,18 @@ void initialize()
     double imu_multiplier = 0.998673983;
     double imu_drift = 0.0;
 
-    // limits are per second
-    double drive_accel_limit_lin = 3.0;
-    double drive_accel_limit_rot = 2.0;
+    // limits are per cycle
+    // at 50 hz, divide limit per second by 20
+    double drive_accel_limit_lin = 0.20;
+    double drive_accel_limit_rot = 0.20;
 
     intake::velocity = 1.0;
-    catapult::velocity = 0.6;
-    catapult::loaded_threshold = 60;
+    catapult::velocity = 0.5;
+    catapult::loaded_threshold = 70;
 
     // ===== CONTROLS =====
 
-    mult_stick_x = 0.8;
+    mult_stick_x = 1.0;
     mult_stick_y = 1.0;
 
     intake_keybind = DIGITAL_R2;
@@ -132,14 +133,14 @@ void initialize()
                      .with_geometry(252.0, 254.0)
                      .build();
     drivetrain->set_brake_mode(MOTOR_BRAKE_COAST);
-    drivetrain->set_accel_limit(drive_accel_limit_lin * program_delay_per_cycle/1000.0, drive_accel_limit_rot * program_delay_per_cycle/1000.0);
+    drivetrain->set_accel_limit(drive_accel_limit_lin, drive_accel_limit_rot);
 
     intake::intake = new pros::Motor(INTAKE_PORT, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
     intake::intake->set_brake_mode(MOTOR_BRAKE_COAST);
 
     // configure catapult so that the forward direction is pulling the catapult back
     catapult::catapult = new pros::Motor(CATAPULT_PORT, MOTOR_GEAR_200, false, MOTOR_ENCODER_DEGREES);
-    catapult::catapult->set_brake_mode(MOTOR_BRAKE_HOLD); // BUG: do not use hold, use a ratchet
+    catapult::catapult->set_brake_mode(MOTOR_BRAKE_COAST); // for safety
     catapult::ready = false;
     catapult::firing = false;
     catapult::catapult_distance = new pros::Distance(CATAPULT_DISTANCE_PORT);
@@ -148,7 +149,7 @@ void initialize()
     imu->reset();
     while (imu->is_calibrating())
     {
-        pros::delay(50);
+        pros::delay(100);
     }
 
     // AbstractEncoder y_enc(drive_left_1);
@@ -266,23 +267,6 @@ void catapult_control(pros::Controller *controller)
     }
 }
 
-double joystick_transform(double x)
-{
-    double function_output = 2.3 * std::pow(std::abs(x), 3) - 2.8 * x * x + 1.4 * std::abs(x);
-    if (function_output < 0)
-        function_output = 0;
-    if (function_output > 1)
-        function_output = 1;
-    if (x > 0)
-    {
-        return function_output;
-    }
-    else
-    {
-        return function_output * -1;
-    }
-}
-
 void opcontrol()
 {
     pros::Controller *controller = new pros::Controller(CONTROLLER_MASTER);
@@ -329,16 +313,15 @@ void opcontrol()
                 if (std::abs(right_stick_y) > 0.75 || std::abs(left_stick_x) > 0.75)
                 {
                     drivetrain->brake();
-                }
+                }  
                 else
                 {
-                    drivetrain->drive(right_stick_y, left_stick_x, false);
+                    drivetrain->drive(right_stick_y, left_stick_x, false, false);
                 }
             }
             else
             {
-                // drivetrain->drive(joystick_transform(right_stick_y), joystick_transform(left_stick_x), false);
-                drivetrain->drive(mult_stick_y * right_stick_y, mult_stick_x * left_stick_x, false);
+                drivetrain->drive(mult_stick_y * right_stick_y, mult_stick_x * left_stick_x, false, false);
             }
         }
 

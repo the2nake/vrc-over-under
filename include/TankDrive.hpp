@@ -48,6 +48,6 @@ private:
     double rot_accel_limit = 0.0;
 
     // velocities are true values, not targets
-    double left_vel = 0.0;
-    double right_vel = 0.0;
+    double curr_left_vel = 0.0;
+    double curr_right_vel = 0.0;
 };

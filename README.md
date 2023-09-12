@@ -11,11 +11,11 @@ This contains code for the VRC 2023-24 Over Under. The code will be updated over
 - A rudimentary operator control loop
 - Odometry with 2 tracking wheels and inertial sensor
 - Pure pursuit for a set of paths with constrained acceleration
+- PID control for drivetrain to maintain linear velocity
 
 ### Upcoming
 
 - Extended Kalman filter for inertial sensor output and odometry output
-- PID control for drivetrain to maintain linear velocity
 - Path generation from cubic Hermite splines
 - Higher accuracy drivetrain motion with pure open loop control
   - Will attempt an internal kinematic model
@@ -23,6 +23,8 @@ This contains code for the VRC 2023-24 Over Under. The code will be updated over
   - Will be useful to counter drift from full omniwheel drive
 
 ## Project Timeline
+
+### September - October
 
 ### June - August
 

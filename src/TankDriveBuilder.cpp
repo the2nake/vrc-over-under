@@ -17,7 +17,7 @@ TankDriveBuilder &TankDriveBuilder::with_left_motors(std::vector<pros::Motor *> 
     return *this;
 }
 
-TankDriveBuilder &TankDriveBuilder::with_right_motors(std::vector<pros::Motor *> left_motors)
+TankDriveBuilder &TankDriveBuilder::with_right_motors(std::vector<pros::Motor *> right_motors)
 {
     for (auto motor : right_motors)
     {
@@ -34,27 +34,26 @@ TankDriveBuilder &TankDriveBuilder::with_right_motors(std::vector<pros::Motor *>
 
 TankDriveBuilder &TankDriveBuilder::with_gear_ratio(double gear_ratio)
 {
-    if (gear_ratio = 0.0)
+    if (gear_ratio == 0.0)
     {
         this->failed = true;
     }
-    else
-    {
-        this->gear_ratio = gear_ratio;
-    }
+
+    this->gear_ratio = gear_ratio;
+
     return *this;
 }
 
 TankDriveBuilder &TankDriveBuilder::with_wheel_travel(double wheel_travel)
 {
-    if (wheel_travel = 0.0)
+    if (wheel_travel == 0.0)
     {
         this->failed = true;
     }
     else
-    {
-        this->wheel_travel = wheel_travel;
-    }
+
+    this->wheel_travel = wheel_travel;
+
     return *this;
 }
 
@@ -69,6 +68,7 @@ TankDriveBuilder &TankDriveBuilder::with_geometry(double track_width, double whe
         this->track_width = track_width;
         this->wheelbase = wheelbase;
     }
+
     return *this;
 }
 
@@ -76,6 +76,7 @@ TankDrive *TankDriveBuilder::build()
 {
     if (this->failed)
     {
+        pros::screen::print(TEXT_MEDIUM, 8, "nani");
         return nullptr;
     }
 
