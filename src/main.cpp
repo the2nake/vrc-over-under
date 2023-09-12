@@ -17,6 +17,7 @@
 namespace shared
 {
     bool training_mode;
+    bool tank_drive_mode;
 
     bool program_running;
     int program_update_hz;
@@ -78,6 +79,7 @@ void initialize()
     // ===== CONFIGURATION =====
 
     training_mode = false;
+    tank_drive_mode = false;
 
     program_update_hz = 50;
     aps_update_hz = 100;
@@ -301,27 +303,57 @@ void opcontrol()
 
         auto left_stick_x = controller->get_analog(ANALOG_LEFT_X) / 127.0;
         auto right_stick_y = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
+        auto left_stick_y = controller->get_analog(ANALOG_LEFT_Y) / 127.0;
 
-        if (std::abs(left_stick_x) < 0.02 && std::abs(right_stick_y) < 0.02)
+        if (tank_drive_mode)
         {
-            drivetrain->brake();
-        }
-        else
-        {
-            if (training_mode)
+            if (std::abs(left_stick_y) < 0.02 && std::abs(right_stick_y) < 0.02)
             {
-                if (std::abs(right_stick_y) > 0.75 || std::abs(left_stick_x) > 0.75)
-                {
-                    drivetrain->brake();
-                }  
-                else
-                {
-                    drivetrain->drive(right_stick_y, left_stick_x, false, false);
-                }
+                drivetrain->brake();
             }
             else
             {
-                drivetrain->drive(mult_stick_y * right_stick_y, mult_stick_x * left_stick_x, false, false);
+                if (training_mode)
+                {
+
+                    if (std::abs(right_stick_y) > 0.75 || std::abs(left_stick_y) > 0.75)
+                    {
+                        drivetrain->brake();
+                    }
+                    else
+                    {
+                        drivetrain->drive_tank(left_stick_y, right_stick_y, false);
+                    }
+                }
+                else
+                {
+                    drivetrain->drive_tank(left_stick_y, right_stick_y, false);
+                }
+            }
+        }
+        else
+        {
+            if (std::abs(left_stick_x) < 0.02 && std::abs(right_stick_y) < 0.02)
+            {
+                drivetrain->brake();
+            }
+            else
+            {
+                if (training_mode)
+                {
+                    if (std::abs(right_stick_y) > 0.75 || std::abs(left_stick_x) > 0.75)
+                    {
+                        drivetrain->brake();
+                    }
+                    else
+                    {
+                        drivetrain->drive(right_stick_y, left_stick_x, false, false);
+                    }
+                }
+                else
+                {
+                    drivetrain->drive(mult_stick_y * right_stick_y, mult_stick_x * left_stick_x, false, false);
+                }
             }
         }
 
