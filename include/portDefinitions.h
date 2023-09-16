@@ -3,6 +3,7 @@
 #pragma once
 
 #define INTAKE_PORT 1
+#define INTAKE_PISTON_PORT 'H'
 
 #define LEFT_DRIVE_PORT_1 2
 #define LEFT_DRIVE_PORT_2 3

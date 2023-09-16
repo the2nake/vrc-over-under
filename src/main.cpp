@@ -43,11 +43,14 @@ namespace shared
     pros::controller_digital_e_t intake_keybind;
     pros::controller_digital_e_t outtake_keybind;
     pros::controller_digital_e_t catapult_fire_keybind;
+    pros::controller_digital_e_t intake_actuate_keybind;
 
     namespace intake
     {
         pros::Motor *intake;
+        pros::ADIDigitalOut *piston;
         double velocity;
+        bool extended;
     };
 
     namespace catapult
@@ -97,21 +100,23 @@ void initialize()
 
     // limits are per cycle
     // at 50 hz, divide limit per second by 20
-    double drive_accel_limit_lin = 0.20;
-    double drive_accel_limit_rot = 0.20;
+    double drive_accel_limit_lin = 0.275;
+    double drive_accel_limit_rot = 0.25;
 
-    intake::velocity = 1.0;
-    catapult::velocity = 0.5;
-    catapult::loaded_threshold = 70;
+    intake::velocity = 0.9;
+    catapult::velocity = 0.65;
+    catapult::loaded_threshold = 75;
 
     // ===== CONTROLS =====
 
-    mult_stick_x = 1.0;
+    mult_stick_x = 0.75;
     mult_stick_y = 1.0;
 
     intake_keybind = DIGITAL_R2;
     outtake_keybind = DIGITAL_R1;
     catapult_fire_keybind = DIGITAL_L1;
+
+    intake_actuate_keybind = DIGITAL_A;
 
     //  ===== END CONFIG =====
 
@@ -139,6 +144,8 @@ void initialize()
 
     intake::intake = new pros::Motor(INTAKE_PORT, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
     intake::intake->set_brake_mode(MOTOR_BRAKE_COAST);
+    intake::extended = false;
+    intake::piston = new pros::ADIDigitalOut(INTAKE_PISTON_PORT, intake::extended);
 
     // configure catapult so that the forward direction is pulling the catapult back
     catapult::catapult = new pros::Motor(CATAPULT_PORT, MOTOR_GEAR_200, false, MOTOR_ENCODER_DEGREES);
@@ -231,6 +238,12 @@ void intake_control(pros::Controller *controller)
     {
         intake::intake->brake();
     }
+
+    if (controller->get_digital_new_press(intake_actuate_keybind)) {
+        intake::extended = !intake::extended;
+    }
+
+    intake::piston->set_value(intake::extended);
 }
 
 void catapult_control(pros::Controller *controller)
