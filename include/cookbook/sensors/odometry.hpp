@@ -98,6 +98,15 @@ public:
     mutex.give();
   }
 
+  void set_position(double x, double y) {
+    while (!mutex.take(5)) {
+      pros::delay(1);
+    }
+    this->x = x;
+    this->y = y;
+    mutex.give();
+  }
+
   Pose get_pose() { return {x.load(), y.load(), heading.load()}; }
   void update();
   void auto_update(double ms_interval); // TODO: implementation

@@ -19,15 +19,14 @@ int aps_update_hz;
 
 using namespace config;
 
-void aps_update_handler(
-    void *param) { /*
-                      int update_delay = (int)(1000 / aps_update_hz); // in ms
-                      while (aps != nullptr)
-                      {
-                          aps->update();
+void odom_update_handler(void *params) {
+  int update_delay = (int)(1000 / aps_update_hz); // in ms
+  while (odom != nullptr) {
+    odom->update();
+    imu->update_heading();
 
-                          pros::delay(update_delay);
-                      }*/
+    pros::delay(update_delay);
+  }
 }
 
 void initialize() {
@@ -49,9 +48,8 @@ void initialize() {
   initialise_devices();
   initialise_chassis();
   initialise_sensors();
-  initialise_catapult();
 
-  // pros::Task aps_update{aps_update_handler};
+  pros::Task odometry_update{odom_update_handler};
 
   program_running = true;
   pros::delay(250);
@@ -62,7 +60,111 @@ void disabled() {}
 
 void competition_initialize() {}
 
-void autonomous() {}
+void autonomous() {
+  // auto velocities = chassis->drive_field_based(-1, -1, 0, 0, true);
+  // motor_pto_l->move_voltage(12000 * velocities.v_lm);
+  // motor_pto_r->move_voltage(12000 * velocities.v_rm);
+  // pros::delay(4000);
+  // chassis->brake();
+  // motor_pto_l->brake();
+  // motor_pto_r->brake();
+
+  /* AWP Defense */
+  /*
+  chassis->drive_field_based(1, 1, 0, 0);
+  pros::delay(400);
+  chassis->brake();
+  chassis->drive_field_based(0, 0, -1, 0);
+  pros::delay(200);
+  chassis->brake();
+  intake_extended = true;
+  intake_piston->set_value(intake_extended);
+  pros::delay(500);
+
+  chassis->drive_relative(0, 0.2, 0);
+  pros::delay(1000);
+  chassis->drive_relative(-0.5, 0, 0);
+  pros::delay(1000);
+  blocker_extended = true;
+  blocker_piston->set_value(blocker_extended);
+  chassis->drive_relative(-1, 1, 0.1);
+  pros::delay(2500);
+  chassis->brake();
+
+  imu->set_heading(180);
+  odom->set_heading(180);
+*/
+  /* AWP Offense
+   */
+
+  // move towards the center
+
+  auto vels = chassis->drive_field_based(0, 0.4, 0, 0, true);
+  motor_pto_l->move_voltage(12000 * vels.v_lm);
+  motor_pto_r->move_voltage(12000 * vels.v_rm);
+  pros::delay(400);
+
+  vels = chassis->drive_field_based(0, 0.8, 0, 0, true);
+  motor_pto_l->move_voltage(12000 * vels.v_lm);
+  motor_pto_r->move_voltage(12000 * vels.v_rm);
+  pros::delay(700);
+  chassis->brake();
+  motor_pto_l->brake();
+  motor_pto_r->brake();
+
+  // move to the left
+  vels = chassis->drive_field_based(-1, 0, 0, 0, true);
+  motor_pto_l->move_voltage(12000 * vels.v_lm);
+  motor_pto_r->move_voltage(12000 * vels.v_rm);
+  pros::delay(750);
+  chassis->brake();
+  motor_pto_l->brake();
+  motor_pto_r->brake();
+
+  // move towards the center
+  vels = chassis->drive_field_based(0, 1, 0, 0, true);
+  motor_pto_l->move_voltage(12000 * vels.v_lm);
+  motor_pto_r->move_voltage(12000 * vels.v_rm);
+  pros::delay(320);
+  chassis->brake();
+  motor_pto_l->brake();
+  motor_pto_r->brake();
+
+  pros::delay(400);
+
+  // turn ~90 degrees
+  vels = chassis->drive_field_based(0, 0, 0.9, 0, true);
+  motor_pto_l->move_voltage(12000 * vels.v_lm);
+  motor_pto_r->move_voltage(12000 * vels.v_rm);
+  pros::delay(270);
+  chassis->brake();
+  motor_pto_l->brake();
+  motor_pto_r->brake();
+
+  // RAM
+  vels = chassis->drive_field_based(0, 1, 0, 0, true);
+  motor_pto_l->move_voltage(12000 * vels.v_lm);
+  motor_pto_r->move_voltage(12000 * vels.v_rm);
+  pros::delay(3000);
+  chassis->brake();
+  motor_pto_l->brake();
+  motor_pto_r->brake();
+
+  // retreat
+  vels = chassis->drive_field_based(0, -1, 0, 0, true);
+  motor_pto_l->move_voltage(12000 * vels.v_lm);
+  motor_pto_r->move_voltage(12000 * vels.v_rm);
+  pros::delay(1000);
+  chassis->brake();
+  motor_pto_l->brake();
+  motor_pto_r->brake();
+
+  blocker_extended = true;
+  blocker_piston->set_value(blocker_extended);
+
+  odom->set_heading(180);
+  imu->set_heading(180);
+}
 
 void opcontrol() {
   pros::Controller *controller =
@@ -83,18 +185,19 @@ void opcontrol() {
     auto input_rx = controller->get_analog(ANALOG_RIGHT_X) / 127.0;
     auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
 
-    imu->update_heading();
-    odom->update();
-
     // OUTPUT
 
     if (std::abs(input_lx) < joystick_threshold &&
         std::abs(input_rx) < joystick_threshold &&
         std::abs(input_ry) < joystick_threshold) {
       chassis->brake();
+      motor_pto_l->brake();
+      motor_pto_r->brake();
     } else {
-      chassis->drive_field_based(input_rx, input_ry, input_lx,
-                                 imu->get_heading());
+      auto velocities = chassis->drive_field_based(input_rx, input_ry, input_lx,
+                                                   imu->get_heading());
+      motor_pto_l->move_voltage(12000 * velocities.v_lm);
+      motor_pto_r->move_voltage(12000 * velocities.v_rm);
     }
 
     if (controller->get_digital_new_press(DIGITAL_A)) {
@@ -102,23 +205,14 @@ void opcontrol() {
       odom->set_heading(0);
     }
 
-    if (controller->get_digital(DIGITAL_R2)) {
-      if (catapult_is_loaded() && loading.load() == false &&
-          firing.load() == false) {
-        fire_catapult_async();
-        pros::delay(1);
-        load_catapult_async();
-      }
+    if (controller->get_digital_new_press(DIGITAL_B)) {
+      blocker_extended = !blocker_extended;
+      blocker_piston->set_value(blocker_extended);
     }
 
-    if (loading.load() == false && firing.load() == false) {
-      if (controller->get_digital(DIGITAL_R1)) {
-        motor_pto_l->move_voltage(-12000);
-        motor_pto_r->move_voltage(-12000);
-      } else {
-        motor_pto_l->brake();
-        motor_pto_r->brake();
-      }
+    if (controller->get_digital_new_press(DIGITAL_X)) {
+      intake_extended = !intake_extended;
+      intake_piston->set_value(intake_extended);
     }
 
     // debug

@@ -16,3 +16,6 @@
 #define PORT_PTO_RIGHT 6
 
 #define PORT_CATA_SWITCH 'a'
+
+#define PORT_PISTON_BLOCKER 'b'
+#define PORT_PISTON_INTAKE 'e'

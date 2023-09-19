@@ -18,7 +18,7 @@ void initialise_sensors() {
   }
 
   imu = new CustomImu(default_imu);
-  imu->set_multiplier(0.997128639);
+  imu->set_multiplier(360.0/356.5);
 
   // set up odometry
   odom = Odometry::OdometryBuilder()

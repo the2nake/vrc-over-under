@@ -11,6 +11,12 @@ pros::Motor *motor_rb = nullptr;
 pros::Motor *motor_pto_l = nullptr;
 pros::Motor *motor_pto_r = nullptr;
 
+pros::ADIDigitalOut *intake_piston = nullptr;
+pros::ADIDigitalOut *blocker_piston = nullptr;
+
+bool intake_extended = false;
+bool blocker_extended = false;
+
 void initialise_devices() {
   motor_lf = new pros::Motor(PORT_DRIVE_LF, pros::E_MOTOR_GEAR_BLUE, true,
                              pros::E_MOTOR_ENCODER_DEGREES);
@@ -20,7 +26,7 @@ void initialise_devices() {
                              pros::E_MOTOR_ENCODER_DEGREES);
 
   motor_rf = new pros::Motor(PORT_DRIVE_RF, pros::E_MOTOR_GEAR_BLUE, false,
-                             pros::E_MOTOR_ENCODER_DEGREES);
+                             pros::E_MOTOR_ENCODER_DEGREES);  
   motor_rm = new pros::Motor(PORT_DRIVE_RM, pros::E_MOTOR_GEAR_BLUE, false,
                              pros::E_MOTOR_ENCODER_DEGREES);
   motor_rb = new pros::Motor(PORT_DRIVE_RB, pros::E_MOTOR_GEAR_BLUE, false,
@@ -36,4 +42,10 @@ void initialise_devices() {
 
   motor_pto_l->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
   motor_pto_r->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+
+  intake_piston = new pros::ADIDigitalOut(PORT_PISTON_INTAKE);
+  blocker_piston = new pros::ADIDigitalOut(PORT_PISTON_BLOCKER);
+
+  intake_extended = false;
+  blocker_extended = false;
 }
