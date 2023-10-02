@@ -29,7 +29,7 @@ namespace shared
     pros::Motor *drive_middle_right;
     pros::Motor *drive_back_right;
 
-    StarDrive *drivetrain;
+    StarDrive *drive;
 
     double mult_stick_x;
     double mult_stick_y;
@@ -112,14 +112,14 @@ void initialize()
         pros::delay(100);
     }
     
-    drivetrain = StarDriveBuilder()
+    drive = StarDriveBuilder()
                      .with_left_motors(left_motors)
                      .with_right_motors(right_motors)
                      .with_geometry(252.0, 254.0)
                      .with_imu(imu)
                      .build();
     // you do not want a holonomic to coast
-    drivetrain->set_brake_mode(MOTOR_BRAKE_BRAKE);
+    drive->set_brake_mode(MOTOR_BRAKE_BRAKE);
 
     // AbstractEncoder y_enc(drive_left_1);
     // AbstractEncoder x_enc(ODOMETRY_X_PORT); // FIXME: should this be reversed?
@@ -143,7 +143,7 @@ void competition_initialize() {}
 
 void autonomous()
 {
-    /*PurePursuitController *ppc = new PurePursuitController(shared::drivetrain, shared::aps);
+    /*PurePursuitController *ppc = new PurePursuitController(shared::drive, shared::aps);
     gui::Graph *graph = new gui::Graph();
     graph->set_display_region({244, 4, 232, 232});
     graph->set_window(-1000.0, -1000.0, 2000.0, 2000.0);
@@ -151,7 +151,7 @@ void autonomous()
     std::vector<Point<double>> points = {{2.0, 2.0}};
 
     ppc->set_path({{0.0, 0.0}, {0.0, 600.0}, {600.0, 600.0}}, 450.0);
-    ppc->set_motion_limits(shared::drivetrain->get_max_lin_vel() * 2, 20.0);
+    ppc->set_motion_limits(shared::drive->get_max_lin_vel() * 2, 20.0);
     ppc->set_gains(1.0, 10.0);
     ppc->follow_path_async();
 
@@ -195,19 +195,19 @@ void opcontrol()
     */
 
     /* test-drive-path
-    drivetrain->set_brake_mode(MOTOR_BRAKE_BRAKE);
+    drive->set_brake_mode(MOTOR_BRAKE_BRAKE);
     for (int i = 0; i < 4; i++)
     {
-        drivetrain->drive(0.25, 0.0, false);
+        drive->drive(0.25, 0.0, false);
         pros::delay(1000);
-        drivetrain->brake();
+        drive->brake();
         auto heading = imu->get_heading();
-        drivetrain->drive(0.0, -0.1, false);
+        drive->drive(0.0, -0.1, false);
         while (std::abs(-90 - (imu->get_heading() - heading)) > 5)
         {
             pros::delay(10);
         }
-        drivetrain->brake();
+        drive->brake();
     }
     */
 
@@ -224,11 +224,11 @@ void opcontrol()
         bool sticks_centered = std::abs(right_stick_x) < threshold && std::abs(right_stick_y) < threshold && std::abs(left_stick_x) < threshold;
         if (sticks_centered)
         {
-            drivetrain->brake();
+            drive->brake();
         }
         else
         {
-            drivetrain->move(distance_to(right_stick_x, right_stick_y), heading_to(right_stick_x, right_stick_y), left_stick_x);
+            drive->move(distance_to(right_stick_x, right_stick_y), heading_to(right_stick_x, right_stick_y), left_stick_x);
         }
 
         imu_reset_control(controller);
