@@ -68,11 +68,11 @@ template <typename T>
 void scale_down_magnitudes(T (&list)[], T max, int len)
 {
     T max_magnitude = 0.0;
-    for (auto item : list)
+    for (int i = 0; i < len; i++)
     {
-        if (std::abs(item) > max_magnitude)
+        if (std::abs(list[i]) > max_magnitude)
         {
-            max_magnitude = std::abs(item);
+            max_magnitude = std::abs(list[i]);
         }
     }
 

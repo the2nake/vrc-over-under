@@ -230,7 +230,9 @@ void opcontrol()
         {
             drivetrain->move(distance_to(right_stick_x, right_stick_y), heading_to(right_stick_x, right_stick_y), left_stick_x);
         }
+
         imu_reset_control(controller);
+
         /*
         auto pose = aps->get_pose();
         auto readings = aps->get_encoder_readings();

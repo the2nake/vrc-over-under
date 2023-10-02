@@ -4,9 +4,9 @@
 
 StarDriveBuilder &StarDriveBuilder::with_left_motors(pros::Motor *left_motors[3])
 {
-    for (auto i : left_motors)
+    for (int i = 0; i < 3; i++)
     {
-        if (i == nullptr)
+        if (left_motors[i])
         {
             this->failed = true;
         }
@@ -24,9 +24,9 @@ StarDriveBuilder &StarDriveBuilder::with_left_motors(pros::Motor *left_motors[3]
 
 StarDriveBuilder &StarDriveBuilder::with_right_motors(pros::Motor *right_motors[3])
 {
-    for (auto i : right_motors)
+    for (int i = 0; i < 3; i++)
     {
-        if (i == nullptr)
+        if (right_motors[i] == nullptr)
         {
             this->failed = true;
         }
