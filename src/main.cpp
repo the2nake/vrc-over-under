@@ -4,13 +4,12 @@
 
 #include "common.hpp"
 #include "portDefinitions.h"
-#include "TankDrive.hpp"
-#include "TankDriveBuilder.hpp"
 #include "Aps.hpp"
 #include "TwoWheelAps.hpp"
 #include "TwoWheelApsBuilder.hpp"
+#include "StarDrive.hpp"
+#include "StarDriveBuilder.hpp"
 #include "Gui.hpp"
-#include "PurePursuitController.hpp"
 
 #include <chrono>
 
@@ -23,45 +22,25 @@ namespace shared
     int program_update_hz;
     int program_delay_per_cycle;
 
-    pros::Motor *drive_left_1;
-    pros::Motor *drive_left_2;
-    pros::Motor *drive_left_top;
-    pros::Motor *drive_right_1;
-    pros::Motor *drive_right_2;
-    pros::Motor *drive_right_top;
+    pros::Motor *drive_front_left;
+    pros::Motor *drive_middle_left;
+    pros::Motor *drive_back_left;
+    pros::Motor *drive_front_right;
+    pros::Motor *drive_middle_right;
+    pros::Motor *drive_back_right;
 
-    TankDrive *drivetrain;
+    StarDrive *drivetrain;
 
     double mult_stick_x;
     double mult_stick_y;
+    double mult_stick_r;
 
     pros::Imu *imu;
     Aps *aps;
 
     int aps_update_hz;
 
-    pros::controller_digital_e_t intake_keybind;
-    pros::controller_digital_e_t outtake_keybind;
-    pros::controller_digital_e_t catapult_fire_keybind;
-    pros::controller_digital_e_t intake_actuate_keybind;
-
-    namespace intake
-    {
-        pros::Motor *intake;
-        pros::ADIDigitalOut *piston;
-        double velocity;
-        bool extended;
-    };
-
-    namespace catapult
-    {
-        pros::Motor *catapult;
-        pros::Distance *catapult_distance;
-        double velocity;
-        int loaded_threshold;
-        bool ready;
-        bool firing;
-    };
+    pros::controller_digital_e_t imu_reset_key;
 };
 
 using namespace shared;
@@ -103,63 +82,44 @@ void initialize()
     double drive_accel_limit_lin = 0.275;
     double drive_accel_limit_rot = 0.25;
 
-    intake::velocity = 0.9;
-    catapult::velocity = 0.65;
-    catapult::loaded_threshold = 75;
-
     // ===== CONTROLS =====
 
-    mult_stick_x = 0.75;
+    mult_stick_x = 1.0;
     mult_stick_y = 1.0;
+    mult_stick_r = 0.8;
 
-    intake_keybind = DIGITAL_R2;
-    outtake_keybind = DIGITAL_R1;
-    catapult_fire_keybind = DIGITAL_L1;
-
-    intake_actuate_keybind = DIGITAL_A;
+    imu_reset_key = DIGITAL_A;
 
     //  ===== END CONFIG =====
 
     program_delay_per_cycle = (int)std::floor(std::max(1000.0 / program_update_hz, 5.0));
 
-    drive_left_1 = new pros::Motor(LEFT_DRIVE_PORT_1, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
-    drive_left_2 = new pros::Motor(LEFT_DRIVE_PORT_2, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
-    drive_left_top = new pros::Motor(LEFT_DRIVE_PORT_TOP, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
+    drive_front_left = new pros::Motor(DRIVE_FRONT_LEFT_PORT, MOTOR_GEAR_BLUE, 1);
+    drive_middle_left = new pros::Motor(DRIVE_MIDDLE_LEFT_PORT, MOTOR_GEAR_BLUE, 1);
+    drive_back_left = new pros::Motor(DRIVE_BACK_LEFT_PORT, MOTOR_GEAR_BLUE, 1);
 
-    drive_right_1 = new pros::Motor(RIGHT_DRIVE_PORT_1, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
-    drive_right_2 = new pros::Motor(RIGHT_DRIVE_PORT_2, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
-    drive_right_top = new pros::Motor(RIGHT_DRIVE_PORT_TOP, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
+    drive_front_right = new pros::Motor(DRIVE_FRONT_RIGHT_PORT, MOTOR_GEAR_BLUE, 0);
+    drive_middle_right = new pros::Motor(DRIVE_MIDDLE_RIGHT_PORT, MOTOR_GEAR_BLUE, 0);
+    drive_back_right = new pros::Motor(DRIVE_BACK_RIGHT_PORT, MOTOR_GEAR_BLUE, 0);
 
-    std::vector<pros::Motor *> left_motors = {drive_left_1, drive_left_2, drive_left_top};
-    std::vector<pros::Motor *> right_motors = {drive_right_1, drive_right_2, drive_right_top};
-    drivetrain = TankDriveBuilder()
-                     .with_left_motors(left_motors)
-                     .with_right_motors(right_motors)
-                     .with_gear_ratio(0.66667)
-                     .with_wheel_travel(260.0)
-                     .with_geometry(252.0, 254.0)
-                     .build();
-    drivetrain->set_brake_mode(MOTOR_BRAKE_COAST);
-    drivetrain->set_accel_limit(drive_accel_limit_lin, drive_accel_limit_rot);
-
-    intake::intake = new pros::Motor(INTAKE_PORT, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
-    intake::intake->set_brake_mode(MOTOR_BRAKE_COAST);
-    intake::extended = false;
-    intake::piston = new pros::ADIDigitalOut(INTAKE_PISTON_PORT, intake::extended);
-
-    // configure catapult so that the forward direction is pulling the catapult back
-    catapult::catapult = new pros::Motor(CATAPULT_PORT, MOTOR_GEAR_200, false, MOTOR_ENCODER_DEGREES);
-    catapult::catapult->set_brake_mode(MOTOR_BRAKE_COAST); // for safety
-    catapult::ready = false;
-    catapult::firing = false;
-    catapult::catapult_distance = new pros::Distance(CATAPULT_DISTANCE_PORT);
-
+    pros::Motor *left_motors[] = {drive_front_left, drive_middle_left, drive_back_left};
+    pros::Motor *right_motors[] = {drive_front_right, drive_middle_right, drive_back_right};
+    
     imu = new pros::Imu(IMU_PORT);
     imu->reset();
     while (imu->is_calibrating())
     {
         pros::delay(100);
     }
+    
+    drivetrain = StarDriveBuilder()
+                     .with_left_motors(left_motors)
+                     .with_right_motors(right_motors)
+                     .with_geometry(252.0, 254.0)
+                     .with_imu(imu)
+                     .build();
+    // you do not want a holonomic to coast
+    drivetrain->set_brake_mode(MOTOR_BRAKE_BRAKE);
 
     // AbstractEncoder y_enc(drive_left_1);
     // AbstractEncoder x_enc(ODOMETRY_X_PORT); // FIXME: should this be reversed?
@@ -215,70 +175,11 @@ void autonomous()
     */
 }
 
-void intake_control(pros::Controller *controller)
+void imu_reset_control(pros::Controller *controller)
 {
-    using namespace shared;
-    auto max_rpm = rpm_from_gearset(intake::intake->get_gearing());
-    if (catapult::ready)
+    if (controller->get_digital_new_press(imu_reset_key))
     {
-        if (controller->get_digital(intake_keybind))
-        {
-            intake::intake->move_velocity(max_rpm * intake::velocity);
-        }
-        else if (controller->get_digital(outtake_keybind))
-        {
-            intake::intake->move_velocity(max_rpm * -intake::velocity);
-        }
-        else
-        {
-            intake::intake->brake();
-        }
-    }
-    else
-    {
-        intake::intake->brake();
-    }
-
-    if (controller->get_digital_new_press(intake_actuate_keybind)) {
-        intake::extended = !intake::extended;
-    }
-
-    intake::piston->set_value(intake::extended);
-}
-
-void catapult_control(pros::Controller *controller)
-{
-    using namespace shared;
-    double max_rpm = rpm_from_gearset(catapult::catapult->get_gearing());
-
-    if (controller->get_digital(catapult_fire_keybind) && catapult::ready)
-    {
-        catapult::firing = true;
-        catapult::ready = false;
-    }
-
-    if (catapult::firing)
-    {
-        catapult::catapult->move_velocity(catapult::velocity * max_rpm);
-        if (catapult::catapult_distance->get() > catapult::loaded_threshold)
-        {
-            catapult::firing = false;
-            catapult::ready = false;
-        }
-    }
-    else if (!catapult::ready)
-    {
-        catapult::catapult->move_velocity(catapult::velocity * max_rpm);
-        if (catapult::catapult_distance->get() < catapult::loaded_threshold)
-        {
-            catapult::ready = true;
-            catapult::firing = false;
-        }
-    }
-
-    if (catapult::ready)
-    {
-        catapult::catapult->brake();
+        imu->set_heading(0.0);
     }
 }
 
@@ -314,65 +215,22 @@ void opcontrol()
     {
         auto cycle_start = std::chrono::high_resolution_clock::now();
 
-        auto left_stick_x = controller->get_analog(ANALOG_LEFT_X) / 127.0;
-        auto right_stick_y = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
-        auto left_stick_y = controller->get_analog(ANALOG_LEFT_Y) / 127.0;
+        auto right_stick_x = mult_stick_x * controller->get_analog(ANALOG_RIGHT_X) / 127.0;
+        auto right_stick_y = mult_stick_y * controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
 
-        if (tank_drive_mode)
+        auto left_stick_x = mult_stick_r * controller->get_analog(ANALOG_LEFT_X) / 127.0;
+
+        double threshold = 0.01;
+        bool sticks_centered = std::abs(right_stick_x) < threshold && std::abs(right_stick_y) < threshold && std::abs(left_stick_x) < threshold;
+        if (sticks_centered)
         {
-            if (std::abs(left_stick_y) < 0.02 && std::abs(right_stick_y) < 0.02)
-            {
-                drivetrain->brake();
-            }
-            else
-            {
-                if (training_mode)
-                {
-
-                    if (std::abs(right_stick_y) > 0.75 || std::abs(left_stick_y) > 0.75)
-                    {
-                        drivetrain->brake();
-                    }
-                    else
-                    {
-                        drivetrain->drive_tank(left_stick_y, right_stick_y, false);
-                    }
-                }
-                else
-                {
-                    drivetrain->drive_tank(left_stick_y, right_stick_y, false);
-                }
-            }
+            drivetrain->brake();
         }
         else
         {
-            if (std::abs(left_stick_x) < 0.02 && std::abs(right_stick_y) < 0.02)
-            {
-                drivetrain->brake();
-            }
-            else
-            {
-                if (training_mode)
-                {
-                    if (std::abs(right_stick_y) > 0.75 || std::abs(left_stick_x) > 0.75)
-                    {
-                        drivetrain->brake();
-                    }
-                    else
-                    {
-                        drivetrain->drive(right_stick_y, left_stick_x, false, false);
-                    }
-                }
-                else
-                {
-                    drivetrain->drive(mult_stick_y * right_stick_y, mult_stick_x * left_stick_x, false, false);
-                }
-            }
+            drivetrain->move(distance_to(right_stick_x, right_stick_y), heading_to(right_stick_x, right_stick_y), left_stick_x);
         }
-
-        intake_control(controller);
-        catapult_control(controller);
-
+        imu_reset_control(controller);
         /*
         auto pose = aps->get_pose();
         auto readings = aps->get_encoder_readings();

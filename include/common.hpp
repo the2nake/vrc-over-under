@@ -57,6 +57,37 @@ double rpm_from_gearset(pros::motor_gearset_e_t gearing);
 void scale_down_magnitude(double &a, double &b, double max);
 
 /**
+ * Scales down the magnitudes of every number in a list to max
+ *
+ * @param list The list of numbers
+ * @param max The maximum magnitude
+ * @param len The length of the list
+ */
+
+template <typename T>
+void scale_down_magnitudes(T (&list)[], T max, int len)
+{
+    T max_magnitude = 0.0;
+    for (auto item : list)
+    {
+        if (std::abs(item) > max_magnitude)
+        {
+            max_magnitude = std::abs(item);
+        }
+    }
+
+    if (max_magnitude < std::abs(max))
+    {
+        return;
+    }
+
+    for (int i = 0; i < len; i++)
+    {
+        list[i] *= std::abs(max) / max_magnitude;
+    }
+}
+
+/**
  * A function to limit the magnitude of a variable
  *
  * @param a A variable
@@ -147,13 +178,39 @@ T cos_deg(T deg)
 }
 
 /**
+ * Finds the heading to a point
+ *
+ * @param x The x coordinate
+ * @param y The y coordinate
+ * @returns The heading to the point, in degrees
+ */
+template <typename T>
+T heading_to(T x, T y)
+{
+    return (double)(90.0 - in_deg(std::atan2(y, x)));
+}
+
+/**
+ * Finds the distance to a point
+ *
+ * @param x The x coordinate
+ * @param y The y coordinate
+ * @returns The distance to the point
+ */
+template <typename T>
+T distance_to(T x, T y)
+{
+    return std::sqrt(x * x + y * y);
+}
+
+/**
  * A function that returns the circle intersection closest to the end of the segment
  *
  * @param centre The center of the circle
  * @param radius The radius of the circle
  * @param segment The line segment to check intersection with
  * @returns The circle intersection closest to the end of the segment
- * 
+ *
  * @exception Throws "No intersection" if there is no intersection
  */
 template <typename T>
@@ -177,7 +234,8 @@ Point<T> find_last_intersection(Point<T> centre, double radius, Segment<T> segme
     double dr = std::sqrt(dx * dx + dy * dy);
     double D = x1 * y2 - x2 * y1;
 
-    if (radius * radius * dr * dr - D * D < 0) {
+    if (radius * radius * dr * dr - D * D < 0)
+    {
         throw "No intersection";
     }
 
