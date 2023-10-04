@@ -63,7 +63,7 @@ void initialize()
     training_mode = false;
     tank_drive_mode = false;
 
-    program_update_hz = 50;
+    program_update_hz = 40;
     aps_update_hz = 100;
 
     ApsSetup aps_config = {
@@ -115,7 +115,7 @@ void initialize()
     drive = StarDriveBuilder()
                      .with_left_motors(left_motors)
                      .with_right_motors(right_motors)
-                     .with_geometry(252.0, 254.0)
+                     .with_geometry(327.81680, 393.54299) // TODO get geometry for center to x pods
                      .with_imu(imu)
                      .build();
     // you do not want a holonomic to coast
