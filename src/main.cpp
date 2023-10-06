@@ -115,10 +115,10 @@ void initialize()
     drive = StarDriveBuilder()
                      .with_left_motors(left_motors)
                      .with_right_motors(right_motors)
-                     .with_geometry(327.81680, 393.54299) // TODO get geometry for center to x pods
+                     .with_geometry(327.81680, 393.54299)
                      .with_imu(imu)
                      .build();
-    // you do not want a holonomic to coast
+    // holonomic drive should brake for higher control
     drive->set_brake_mode(MOTOR_BRAKE_BRAKE);
 
     // AbstractEncoder y_enc(drive_left_1);

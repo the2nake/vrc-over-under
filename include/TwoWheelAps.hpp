@@ -18,7 +18,7 @@ public:
     void set_pose(Pose pose) override;
     void update() override;
     Pose get_pose() override { return {this->x.load(), this->y.load(), this->heading.load()}; }
-    EncoderReadings get_encoder_readings()
+    EncoderReadings get_encoder_readings() override
     {
         return {(double)this->y_encoder->get_value(), 0.0, (double)this->x_encoder->get_value()};
     }
@@ -52,8 +52,8 @@ private:
 
     pros::Mutex pose_data_mutex;
 
-    Filter* filter = nullptr;
+    Filter *filter = nullptr;
     bool pass_local_coordinates = true;
-    
+
     std::chrono::high_resolution_clock::time_point last_update_time;
 };

@@ -148,7 +148,7 @@ T in_deg(T rad)
  * @returns The angle in radians
  */
 template <typename T>
-T in_radians(T deg)
+T in_rad(T deg)
 {
     return 0.01745329251 * deg;
 }
@@ -162,7 +162,7 @@ T in_radians(T deg)
 template <typename T>
 T sin_deg(T deg)
 {
-    return std::sin(in_radians(deg));
+    return std::sin(in_rad(deg));
 }
 
 /**
@@ -174,7 +174,7 @@ T sin_deg(T deg)
 template <typename T>
 T cos_deg(T deg)
 {
-    return std::cos(in_radians(deg));
+    return std::cos(in_rad(deg));
 }
 
 /**

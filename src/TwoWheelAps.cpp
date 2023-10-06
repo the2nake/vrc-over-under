@@ -53,8 +53,8 @@ void TwoWheelAps::update()
     }
     else
     {
-        d_y = 2 * sin_deg(d_heading / 2.0) * (d_y_enc / in_radians(d_heading) + y_wheel_placement);
-        d_x = 2 * sin_deg(d_heading / 2.0) * (d_x_enc / in_radians(d_heading) + x_wheel_placement);
+        d_y = 2 * sin_deg(d_heading / 2.0) * (d_y_enc / in_rad(d_heading) + y_wheel_placement);
+        d_x = 2 * sin_deg(d_heading / 2.0) * (d_x_enc / in_rad(d_heading) + x_wheel_placement);
     }
 
     auto now = std::chrono::high_resolution_clock::now();

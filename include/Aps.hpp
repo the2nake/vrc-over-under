@@ -28,7 +28,7 @@ struct ApsSetup
 
     double left_wheel_distance = 0.0;   // distance from the tracking centre to the middle of the left tracking wheel
     double right_wheel_distance = 0.0;  // distance from the tracking centre to the middle of the right tracking wheel
-    double strafe_wheel_distance = 0.0; // distance from the tracking centre to the middle of the right tracking wheel
+    double strafe_wheel_distance = 0.0; // distance from the tracking centre to the middle of the strafe tracking wheel
 };
 
 struct ImuSetup
