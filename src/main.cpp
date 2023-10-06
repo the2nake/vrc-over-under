@@ -5,8 +5,6 @@
 #include "common.hpp"
 #include "portDefinitions.h"
 #include "Aps.hpp"
-#include "TwoWheelAps.hpp"
-#include "TwoWheelApsBuilder.hpp"
 #include "StarDrive.hpp"
 #include "StarDriveBuilder.hpp"
 #include "Gui.hpp"
@@ -16,7 +14,6 @@
 namespace shared
 {
     bool training_mode;
-    bool tank_drive_mode;
 
     bool program_running;
     int program_update_hz;
@@ -61,20 +58,11 @@ void initialize()
     // ===== CONFIGURATION =====
 
     training_mode = false;
-    tank_drive_mode = false;
 
     program_update_hz = 40;
     aps_update_hz = 100;
 
-    ApsSetup aps_config = {
-        173.333333333,
-        0.0, // not used
-        220.0,
-        -85.773987718,  // TODO: Rerecord
-        0.0,            // not used
-        117.355549871}; // TODO: Rerecord
-
-    double imu_multiplier = 0.998673983;
+    double imu_multiplier = 0.998673983; // TODO: retune
     double imu_drift = 0.0;
 
     // limits are per cycle
@@ -120,15 +108,6 @@ void initialize()
                      .build();
     // holonomic drive should brake for higher control
     drive->set_brake_mode(MOTOR_BRAKE_BRAKE);
-
-    // AbstractEncoder y_enc(drive_left_1);
-    // AbstractEncoder x_enc(ODOMETRY_X_PORT); // FIXME: should this be reversed?
-    // aps = TwoWheelApsBuilder()
-    //           .with_y_encoder(y_enc)
-    //           .with_x_encoder(x_enc)
-    //           .with_imu({imu, imu_multiplier, imu_drift})
-    //           .with_config(aps_config)
-    //           .build();
 
     // pros::Task aps_update{aps_update_handler};
     // pros::delay(250);
