@@ -84,7 +84,7 @@ void initialize()
     training_mode = false;
     tank_drive_mode = false;
 
-    program_update_hz = 50;
+    program_update_hz = 40;
     aps_update_hz = 100;
 
     ApsSetup aps_config = {
