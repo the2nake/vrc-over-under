@@ -127,3 +127,54 @@ void TankDrive::set_brake_mode(pros::motor_brake_mode_e_t mode)
         motor->set_brake_mode(mode);
     }
 }
+
+void TankDrive::swing_pid_heading(double left_v, double right_v, double target_heading, double kP)
+{
+    double travel_per_degree = this->wheel_travel * this->gear_ratio / 360.0;
+
+    double output_left = 1.0;
+    double output_right = 1.0;
+
+    do
+    {
+        double sense = this->imu->get_heading();
+
+        output_left = left_v * (target_heading - sense) * kP;
+        output_right = right_v * (target_heading - sense) * kP;
+
+        drive_tank(output_left, output_right, false);
+
+        pros::screen::print(TEXT_MEDIUM, 1, "left: %f, right: %f", output_left, output_right);
+
+        pros::delay(20);
+    } while (std::abs(output_left) > 0.05 || std::abs(output_right) > 0.05);
+}
+
+void TankDrive::drive_proportional_pos(double left_p, double right_p, double kP)
+{
+
+    double travel_per_degree = this->wheel_travel * this->gear_ratio / 360.0;
+
+    double start_left = this->left_motors[0]->get_position() * travel_per_degree;
+    double start_right = this->right_motors[0]->get_position() * travel_per_degree;
+
+    double output_left = 1.0;
+    double output_right = 1.0;
+
+    do
+    {
+        double sense_l = this->left_motors[0]->get_position() * travel_per_degree - start_left;
+        double sense_r = this->right_motors[0]->get_position() * travel_per_degree - start_right;
+
+        output_left = (left_p - sense_l) * kP;
+        output_right = (right_p - sense_r) * kP;
+
+        drive_tank(output_left, output_right, false);
+
+        pros::screen::print(TEXT_MEDIUM, 1, "left: %f, right: %f", output_left, output_right);
+
+        pros::delay(20);
+    } while (std::abs(output_left) > 0.05 || std::abs(output_right) > 0.05);
+
+    brake();
+}

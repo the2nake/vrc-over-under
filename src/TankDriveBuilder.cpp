@@ -72,6 +72,16 @@ TankDriveBuilder &TankDriveBuilder::with_geometry(double track_width, double whe
     return *this;
 }
 
+TankDriveBuilder &TankDriveBuilder::with_imu(pros::Imu *imu) {
+    if (imu == nullptr) {
+        this->failed = true;
+    } else {
+        this->imu = imu;
+    }
+
+    return *this;
+}
+
 TankDrive *TankDriveBuilder::build()
 {
     if (this->failed)
@@ -81,6 +91,8 @@ TankDrive *TankDriveBuilder::build()
     }
 
     TankDrive *tank_drive = new TankDrive();
+
+    tank_drive->imu = this->imu;
 
     tank_drive->left_motors = this->left_motors;
     tank_drive->right_motors = this->right_motors;

@@ -319,3 +319,14 @@ Point<T> pick_closest_point_to(std::vector<Point<T>> points, Point<T> goal)
 
     return closest_point;
 }
+
+/**
+ * Calculates the time between two time points
+ * 
+ * @param t0 The first time point.
+ * @param tf The second time point.
+*/
+template <typename T>
+long double time_between(std::chrono::high_resolution_clock::time_point t0, std::chrono::high_resolution_clock::time_point tf) {
+    return std::chrono::duration_cast<T>(tf - t0).count();
+}

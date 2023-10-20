@@ -31,6 +31,13 @@ public:
 
     double to_pct(double lin_vel) { return lin_vel / this->get_max_lin_vel(); }
 
+    /**
+     * left_v and right_v are applied when heading is to the right
+    */
+    void swing_pid_heading(double left_v, double right_v, double target_heading, double kP);
+
+    void drive_proportional_pos(double left_p, double right_p, double kP);
+
 private:
     TankDrive() {}
 
@@ -50,4 +57,6 @@ private:
     // velocities are true values, not targets
     double curr_left_vel = 0.0;
     double curr_right_vel = 0.0;
+
+    pros::Imu *imu = nullptr;
 };

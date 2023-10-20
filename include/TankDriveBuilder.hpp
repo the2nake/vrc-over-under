@@ -12,6 +12,8 @@ public:
     TankDriveBuilder &with_gear_ratio(double gear_ratio = 1.0);
     TankDriveBuilder &with_wheel_travel(double wheel_travel = 220.0);
     TankDriveBuilder &with_geometry(double track_width = 254.0, double wheelbase = 254.0);
+    TankDriveBuilder &with_imu(pros::Imu* imu);
+
     TankDrive *build();
 
 private:
@@ -19,6 +21,8 @@ private:
 
     std::vector<pros::Motor *> left_motors = {};
     std::vector<pros::Motor *> right_motors = {};
+
+    pros::Imu *imu = nullptr;
 
     double gear_ratio = 1.0;
     double wheel_travel = 220.0;

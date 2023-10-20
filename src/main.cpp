@@ -122,6 +122,13 @@ void initialize()
 
     program_delay_per_cycle = (int)std::floor(std::max(1000.0 / program_update_hz, 5.0));
 
+    imu = new pros::Imu(IMU_PORT);
+    imu->reset();
+    while (imu->is_calibrating())
+    {
+        pros::delay(100);
+    }
+
     drive_left_1 = new pros::Motor(LEFT_DRIVE_PORT_1, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
     drive_left_2 = new pros::Motor(LEFT_DRIVE_PORT_2, MOTOR_GEAR_600, true, MOTOR_ENCODER_DEGREES);
     drive_left_top = new pros::Motor(LEFT_DRIVE_PORT_TOP, MOTOR_GEAR_600, false, MOTOR_ENCODER_DEGREES);
@@ -138,6 +145,7 @@ void initialize()
                      .with_gear_ratio(0.66667)
                      .with_wheel_travel(260.0)
                      .with_geometry(252.0, 254.0)
+                     .with_imu(imu)
                      .build();
     drivetrain->set_brake_mode(MOTOR_BRAKE_COAST);
     drivetrain->set_accel_limit(drive_accel_limit_lin, drive_accel_limit_rot);
@@ -153,13 +161,6 @@ void initialize()
     catapult::ready = false;
     catapult::firing = false;
     catapult::catapult_distance = new pros::Distance(CATAPULT_DISTANCE_PORT);
-
-    imu = new pros::Imu(IMU_PORT);
-    imu->reset();
-    while (imu->is_calibrating())
-    {
-        pros::delay(100);
-    }
 
     // AbstractEncoder y_enc(drive_left_1);
     // AbstractEncoder x_enc(ODOMETRY_X_PORT); // FIXME: should this be reversed?
@@ -183,6 +184,12 @@ void competition_initialize() {}
 
 void autonomous()
 {
+    // drivetrain->drive(1, 0, false, false);
+    // pros::delay(1000);
+    // drivetrain->brake();
+
+    drivetrain->drive_proportional_pos(200, 200, 0.0025); // in mm
+    //drivetrain->swing_pid_heading(1.0, -1.0, 90.0, 0.005555556); // in degrees
     /*PurePursuitController *ppc = new PurePursuitController(shared::drivetrain, shared::aps);
     gui::Graph *graph = new gui::Graph();
     graph->set_display_region({244, 4, 232, 232});
@@ -239,7 +246,8 @@ void intake_control(pros::Controller *controller)
         intake::intake->brake();
     }
 
-    if (controller->get_digital_new_press(intake_actuate_keybind)) {
+    if (controller->get_digital_new_press(intake_actuate_keybind))
+    {
         intake::extended = !intake::extended;
     }
 
