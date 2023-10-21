@@ -188,8 +188,60 @@ void autonomous()
     // pros::delay(1000);
     // drivetrain->brake();
 
-    drivetrain->drive_proportional_pos(200, 200, 0.0025); // in mm
-    //drivetrain->swing_pid_heading(1.0, -1.0, 90.0, 0.005555556); // in degrees
+    auto max_rpm = rpm_from_gearset(intake::intake->get_gearing());
+    while (catapult::catapult_distance->get() > catapult::loaded_threshold)
+    {
+        catapult::catapult->move_velocity(catapult::velocity * max_rpm);
+        pros::delay(20);
+    }
+    catapult::catapult->brake();
+
+    for (int i = 0; i < 40; i++)
+    {
+        drivetrain->drive(-1.0, 0.0, false, false);
+        pros::delay(25);
+    }
+    drivetrain->brake();
+
+    drivetrain->drive_proportional_pos(200, 200, 0.0020); // in mm
+
+    for (int i = 0; i < 30; i++)
+    {
+        drivetrain->drive_tank(1.0, 0.1, false);
+        pros::delay(25);
+    }
+    drivetrain->brake();
+
+    imu->set_heading(315);
+
+    drivetrain->swing_pid_heading(0.0, -1.0, 340.0, 0.005, 0.0, 0.0);
+
+    for (int i = 0; i < 44; i++)
+    {
+        while (catapult::catapult_distance->get() > catapult::loaded_threshold)
+        {
+            catapult::catapult->move_velocity(catapult::velocity * max_rpm);
+            pros::delay(20);
+        } // load
+        while (catapult::catapult_distance->get() < catapult::loaded_threshold)
+        {
+            catapult::catapult->move_velocity(catapult::velocity * max_rpm);
+            pros::delay(20);
+        } // fire
+    } // count 44 shots
+
+    while (catapult::catapult_distance->get() > catapult::loaded_threshold)
+    {
+        catapult::catapult->move_velocity(catapult::velocity * max_rpm);
+        pros::delay(20);
+    } // load
+
+    // DO DRIVING HERE
+
+    // drivetrain->swing_pid_heading(-0.75, -1.0, 225.0, 0.005, 0.0, 0.0);
+
+    // drivetrain->swing_pid_heading(1.0, -0.5, 135.0, 0.005, 0.0, 0.0);
+    // drivetrain->swing_pid_heading(1.0, -0.5, 315.0, 0.005, 0.0, 0.0);
     /*PurePursuitController *ppc = new PurePursuitController(shared::drivetrain, shared::aps);
     gui::Graph *graph = new gui::Graph();
     graph->set_display_region({244, 4, 232, 232});

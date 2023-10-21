@@ -2,6 +2,7 @@
 
 #include "TankDrive.hpp"
 #include "common.hpp"
+#include "PIDController.hpp"
 
 void TankDrive::set_accel_limit(double lin, double rot)
 {
@@ -128,26 +129,33 @@ void TankDrive::set_brake_mode(pros::motor_brake_mode_e_t mode)
     }
 }
 
-void TankDrive::swing_pid_heading(double left_v, double right_v, double target_heading, double kP)
+void TankDrive::swing_pid_heading(double left_v, double right_v, double target_heading, double kP, double kI, double kD)
 {
-    double travel_per_degree = this->wheel_travel * this->gear_ratio / 360.0;
+    PIDController scale_controller({0.0, kP, kI, kD, false, 0.0});
+    scale_controller.startPID(target_heading);
 
     double output_left = 1.0;
     double output_right = 1.0;
 
+    pros::delay(20);
+
     do
     {
         double sense = this->imu->get_heading();
+        scale_controller.updatePID(sense);
 
-        output_left = left_v * (target_heading - sense) * kP;
-        output_right = right_v * (target_heading - sense) * kP;
+        output_left = left_v * scale_controller.getOutput();
+        output_right = right_v * scale_controller.getOutput();
 
         drive_tank(output_left, output_right, false);
 
         pros::screen::print(TEXT_MEDIUM, 1, "left: %f, right: %f", output_left, output_right);
+        pros::screen::print(TEXT_MEDIUM, 2, "error: %f", target_heading - sense);
 
         pros::delay(20);
     } while (std::abs(output_left) > 0.05 || std::abs(output_right) > 0.05);
+
+    brake();
 }
 
 void TankDrive::drive_proportional_pos(double left_p, double right_p, double kP)

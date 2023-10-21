@@ -34,7 +34,7 @@ public:
     /**
      * left_v and right_v are applied when heading is to the right
     */
-    void swing_pid_heading(double left_v, double right_v, double target_heading, double kP);
+    void swing_pid_heading(double left_v, double right_v, double target_heading, double kP, double kI, double kD);
 
     void drive_proportional_pos(double left_p, double right_p, double kP);
 
