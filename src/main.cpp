@@ -6,105 +6,108 @@
 
 #include <chrono>
 
-namespace shared
-{
-    bool program_running;
-    int program_update_hz;
-    double program_delay_per_cycle;
+namespace shared {
+bool program_running;
+int program_update_hz;
+double program_delay_per_cycle;
 
-    int aps_update_hz;
-};
+int aps_update_hz;
+}; // namespace shared
 
 using namespace shared;
 
-void aps_update_handler(void *param)
-{ /*
-     int update_delay = (int)(1000 / aps_update_hz); // in ms
-     while (aps != nullptr)
-     {
-         aps->update();
+void aps_update_handler(
+    void *param) { /*
+                      int update_delay = (int)(1000 / aps_update_hz); // in ms
+                      while (aps != nullptr)
+                      {
+                          aps->update();
 
-         pros::delay(update_delay);
-     }*/
+                          pros::delay(update_delay);
+                      }*/
 }
 
-void initialize()
-{
-    // ===== CONFIGURATION =====
+void initialize() {
+  // ===== CONFIGURATION =====
 
-    program_update_hz = 40;
-    aps_update_hz = 100;
-    double imu_multiplier = 0.998673983;
-    double imu_drift = 0.0;
+  program_update_hz = 40;
+  aps_update_hz = 100;
+  double imu_multiplier = 0.998673983;
+  double imu_drift = 0.0;
 
-    //  ===== END CONFIG =====
+  //  ===== END CONFIG =====
 
-    program_delay_per_cycle = std::max(1000.0 / program_update_hz, 5.0); // wait no lower than 5 ms
+  program_delay_per_cycle =
+      std::max(1000.0 / program_update_hz, 5.0); // wait no lower than 5 ms
 
-    /*
-    imu = new pros::Imu(IMU_PORT);
-    imu->reset();
-    while (imu->is_calibrating())
-    {
-        pros::delay(100);
-    }*/
+  /*
+  imu = new pros::Imu(IMU_PORT);
+  imu->reset();
+  while (imu->is_calibrating())
+  {
+      pros::delay(100);
+  }*/
 
-    // pros::Task aps_update{aps_update_handler};
+  // pros::Task aps_update{aps_update_handler};
 
-    program_running = true;
-    pros::delay(250);
-    // aps->set_pose({0.0, 0.0, 0.0});
+  program_running = true;
+  pros::delay(250);
+  // aps->set_pose({0.0, 0.0, 0.0});
 }
 
 void disabled() {}
 
 void competition_initialize() {}
 
-void autonomous()
-{
-}
+void autonomous() {}
 
-void opcontrol()
-{
-    pros::Controller *controller = new pros::Controller(pros::E_CONTROLLER_MASTER);
-    gui::Graph *graph = new gui::Graph();
-    graph->set_display_region({244, 4, 232, 232});
-    graph->set_window(-1000.0, -1000.0, 2000.0, 2000.0);
-    graph->point_width = 3;
-    std::vector<Point<double>> points = {{2.0, 2.0}};
+void opcontrol() {
+  pros::Controller *controller =
+      new pros::Controller(pros::E_CONTROLLER_MASTER);
+  gui::Graph *graph = new gui::Graph();
+  graph->set_display_region({244, 4, 232, 232});
+  graph->set_window(-1000.0, -1000.0, 2000.0, 2000.0);
+  graph->point_width = 3;
+  std::vector<Point<double>> points = {{2.0, 2.0}};
 
-    while (program_running)
+  while (program_running) {
+    auto cycle_start = std::chrono::high_resolution_clock::now();
+
+    auto input_lx = controller->get_analog(ANALOG_LEFT_X) / 127.0;
+    auto input_rx = controller->get_analog(ANALOG_RIGHT_X) / 127.0;
+    auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
+    /*
+    if (std::abs(input_lx) < 0.02 && std::abs(input_rx) < 0.02 &&
+    std::abs(input_ry) < 0.02)
     {
-        auto cycle_start = std::chrono::high_resolution_clock::now();
-
-        auto input_lx = controller->get_analog(ANALOG_LEFT_X) / 127.0;
-        auto input_rx = controller->get_analog(ANALOG_RIGHT_X) / 127.0;
-        auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
-        /*
-        if (std::abs(input_lx) < 0.02 && std::abs(input_rx) < 0.02 && std::abs(input_ry) < 0.02)
-        {
-            chassis->brake();
-        }
-        else
-        {
-            chassis->drive_field_based(input_rx, input_ry, input_lx, imu->get_heading());
-        }*/
-        /*
-        auto pose = aps->get_pose();
-        auto readings = aps->get_encoder_readings();
-        pros::screen::print(TEXT_MEDIUM, 0, "(%.2f %.2f), theta: %.2f", pose.x, pose.y, pose.heading);
-        pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d %d", (int)(std::floor(readings.strafe_enc)), (int)(std::floor(readings.left_enc)));
-
-        if (points.size() > 100)
-        {
-            points.erase(points.begin());
-        }
-        points.push_back({pose.x, pose.y});*/
-
-        graph->draw();
-        graph->plot(points);
-
-        double cycle_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - cycle_start).count();
-        pros::delay(std::max(0.0, program_delay_per_cycle - cycle_time));
+        chassis->brake();
     }
+    else
+    {
+        chassis->drive_field_based(input_rx, input_ry, input_lx,
+    imu->get_heading());
+    }*/
+    /*
+    auto pose = aps->get_pose();
+    auto readings = aps->get_encoder_readings();
+    pros::screen::print(TEXT_MEDIUM, 0, "(%.2f %.2f), theta: %.2f", pose.x,
+    pose.y, pose.heading); pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d
+    %d", (int)(std::floor(readings.strafe_enc)),
+    (int)(std::floor(readings.left_enc)));
+
+    if (points.size() > 100)
+    {
+        points.erase(points.begin());
+    }
+    points.push_back({pose.x, pose.y});*/
+
+    graph->draw();
+    graph->plot(points);
+
+    double cycle_time =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::high_resolution_clock::now() - cycle_start)
+            .count();
+    pros::delay(std::max(0.0, program_delay_per_cycle - cycle_time));
+  }
 }

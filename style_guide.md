@@ -1,5 +1,10 @@
 # Code Style Guide
 
+## Indentation
+
+- Tab = two spaces
+- LLVM formatting
+
 ## Naming
 
 - Classes and structs will begin with an uppercase letter
