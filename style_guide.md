@@ -6,6 +6,7 @@
 - All words in a class will be capitalised
 - Abbereviations will get only one capital letter in classes
 - Methods, functions, and arguments should use snake_case
+- File names should be in snake_case
 - Macros should use SCREAMING_SNAKE_CASE
 - Spelling should use English (UK)
 
@@ -16,6 +17,4 @@
 ## Classes
 
 - Always initialise private class attributes
-- When calling a method from within its class, use this->method()
-- When using an attribute of a class, use this->attribute
-- All header files should include all of the includes for every function and class used
+- Usage of the `this` keyword should be limited to cases where there may be ambiguity
