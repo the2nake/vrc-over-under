@@ -210,10 +210,6 @@ Point<T> find_last_intersection(Point<T> centre, double radius, Segment<T> segme
         sol2_valid = false;
     }
 
-    pros::screen::print(TEXT_MEDIUM, 8, "%.2f %.2f %.2f %.2f", dx, dy, dr, D);
-    pros::screen::print(TEXT_MEDIUM, 9, "%.2f %.2f", sol1x, sol1y);
-    pros::screen::print(TEXT_MEDIUM, 10, "%.2f %.2f", sol2x, sol2y);
-
     if ((!sol1_valid) && (!sol2_valid))
     {
         return {static_cast<T>(nan("")), static_cast<T>(nan(""))};
