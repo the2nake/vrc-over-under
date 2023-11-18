@@ -101,15 +101,15 @@ void initialize()
     // limits are per cycle
     // at 50 hz, divide limit per second by 20
     double drive_accel_limit_lin = 0.275;
-    double drive_accel_limit_rot = 0.25;
+    double drive_accel_limit_rot = 1000; // 0.35;
 
     intake::velocity = 0.9;
-    catapult::velocity = 0.65;
-    catapult::loaded_threshold = 75;
+    catapult::velocity = 0.55;
+    catapult::loaded_threshold = 77;
 
     // ===== CONTROLS =====
 
-    mult_stick_x = 0.75;
+    mult_stick_x = 0.6;
     mult_stick_y = 1.0;
 
     intake_keybind = DIGITAL_R2;
@@ -189,6 +189,7 @@ void autonomous()
     // drivetrain->brake();
 
     auto max_rpm = rpm_from_gearset(intake::intake->get_gearing());
+
     while (catapult::catapult_distance->get() > catapult::loaded_threshold)
     {
         catapult::catapult->move_velocity(catapult::velocity * max_rpm);
@@ -216,25 +217,31 @@ void autonomous()
 
     drivetrain->swing_pid_heading(0.0, -1.0, 340.0, 0.005, 0.0, 0.0);
 
+    intake::piston->set_value(1);
+
     for (int i = 0; i < 44; i++)
     {
         while (catapult::catapult_distance->get() > catapult::loaded_threshold)
         {
-            catapult::catapult->move_velocity(catapult::velocity * max_rpm);
+            catapult::catapult->move_voltage(12000);
             pros::delay(20);
         } // load
+        catapult::catapult->brake();
+        pros::delay(400);
         while (catapult::catapult_distance->get() < catapult::loaded_threshold)
         {
-            catapult::catapult->move_velocity(catapult::velocity * max_rpm);
+            catapult::catapult->move_voltage(12000);
             pros::delay(20);
         } // fire
-    } // count 44 shots
+    }     // count 44 shots
 
     while (catapult::catapult_distance->get() > catapult::loaded_threshold)
     {
         catapult::catapult->move_velocity(catapult::velocity * max_rpm);
         pros::delay(20);
     } // load
+
+    catapult::catapult->brake();
 
     // DO DRIVING HERE
 
