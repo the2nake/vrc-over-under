@@ -6,15 +6,17 @@
 
 #include <chrono>
 
-namespace shared {
+namespace config {
 bool program_running;
+
 int program_update_hz;
+float joystick_threshold;
 double program_delay_per_cycle;
 
 int aps_update_hz;
-}; // namespace shared
+}; // namespace config
 
-using namespace shared;
+using namespace config;
 
 void aps_update_handler(
     void *param) { /*
@@ -32,21 +34,19 @@ void initialize() {
 
   program_update_hz = 40;
   aps_update_hz = 100;
-  double imu_multiplier = 0.998673983;
-  double imu_drift = 0.0;
+
+  joystick_threshold = 0.02;
+
+  // double imu_multiplier = 0.998673983;
+  // double imu_drift = 0.0;
 
   //  ===== END CONFIG =====
 
   program_delay_per_cycle =
       std::max(1000.0 / program_update_hz, 5.0); // wait no lower than 5 ms
 
-  /*
-  imu = new pros::Imu(IMU_PORT);
-  imu->reset();
-  while (imu->is_calibrating())
-  {
-      pros::delay(100);
-  }*/
+  initialise_chassis();
+  initialise_sensors();
 
   // pros::Task aps_update{aps_update_handler};
 
@@ -76,17 +76,20 @@ void opcontrol() {
     auto input_lx = controller->get_analog(ANALOG_LEFT_X) / 127.0;
     auto input_rx = controller->get_analog(ANALOG_RIGHT_X) / 127.0;
     auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
-    /*
-    if (std::abs(input_lx) < 0.02 && std::abs(input_rx) < 0.02 &&
-    std::abs(input_ry) < 0.02)
-    {
-        chassis->brake();
+
+    if (std::abs(input_lx) < joystick_threshold &&
+        std::abs(input_rx) < joystick_threshold &&
+        std::abs(input_ry) < joystick_threshold) {
+      chassis->brake();
+    } else {
+      // TODO: improve sensor code by adding imu multiplier
+      // necessary since once the imu heading ticks over 360 multiplication no
+      // longer is possible. use shorter_turn function from cookbook utils
+
+      chassis->drive_field_based(input_rx, input_ry, input_lx,
+                                 imu->get_heading());
     }
-    else
-    {
-        chassis->drive_field_based(input_rx, input_ry, input_lx,
-    imu->get_heading());
-    }*/
+
     /*
     auto pose = aps->get_pose();
     auto readings = aps->get_encoder_readings();

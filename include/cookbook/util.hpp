@@ -118,6 +118,14 @@ template <typename T> T sin_deg(T deg) { return std::sin(in_radians(deg)); }
 template <typename T> T cos_deg(T deg) { return std::cos(in_radians(deg)); }
 
 /**
+ * @brief calculates the radius value of the polar representation of a cartesian
+ * coordinate
+ */
+template <typename T> T polar_radius(T x, T y) {
+  return std::sqrt(x * x + y * y);
+}
+
+/**
  * A function that returns the circle intersection closest to the end of the
  * segment
  *

@@ -1,9 +1,10 @@
 #include "salsa/api.hpp"
 
-extern StarDrive *chassis;
+StarDrive *chassis = nullptr;
 
 void initialise_chassis() {
   // TODO: check reversals
+  // !!!: input correct geometry data
   pros::Motor *motor_lf =
       new pros::Motor(PORT_DRIVE_LF, pros::E_MOTOR_GEAR_BLUE, false,
                       pros::E_MOTOR_ENCODER_DEGREES);
@@ -24,7 +25,11 @@ void initialise_chassis() {
       new pros::Motor(PORT_DRIVE_RB, pros::E_MOTOR_GEAR_BLUE, false,
                       pros::E_MOTOR_ENCODER_DEGREES);
 
-  std::vector<pros::Motor *> motors = {motor_lf, motor_lm, motor_lb,
+  std::vector<pros::Motor *> drive_motors = {motor_lf, motor_lm, motor_lb,
                                        motor_rf, motor_rm, motor_rb};
-  chassis = StarDrive::Builder().with_motors(motors).build();
+  chassis = StarDrive::Builder()
+                .with_motors(drive_motors)
+                .with_geometry(100.0, 200.0)
+                .build();
+  chassis->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
 }
