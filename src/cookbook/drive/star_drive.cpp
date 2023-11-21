@@ -123,8 +123,8 @@ StarDriveVelocities StarDrive::drive_field_based(float x, float y, float r,
                                                  float heading, bool boost) {
   heading = mod(heading, 360.0);
   // anticlockwise rotation matrix
-  auto x_r = x * cos_deg(heading) + y * sin_deg(heading);
-  auto y_r = -x * sin_deg(heading) + y * cos_deg(heading);
+  auto x_r = x * cos_deg(heading) - y * sin_deg(heading);
+  auto y_r = x * sin_deg(heading) + y * cos_deg(heading);
   return drive_relative(x_r, y_r, r, boost);
 }
 

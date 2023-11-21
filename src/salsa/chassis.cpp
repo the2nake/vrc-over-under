@@ -3,8 +3,6 @@
 StarDrive *chassis = nullptr;
 
 void initialise_chassis() {
-  // TODO: check reversals
-  // !!!: input correct geometry data
   pros::Motor *motor_lf =
       new pros::Motor(PORT_DRIVE_LF, pros::E_MOTOR_GEAR_BLUE, true,
                       pros::E_MOTOR_ENCODER_DEGREES);
@@ -29,7 +27,7 @@ void initialise_chassis() {
                                        motor_rf, motor_rm, motor_rb};
   chassis = StarDrive::Builder()
                 .with_motors(drive_motors)
-                .with_geometry(100.0, 200.0)
+                .with_geometry(323.85, 393.573)
                 .build();
   chassis->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
 }
