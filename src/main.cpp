@@ -90,6 +90,10 @@ void opcontrol() {
                                  imu->get_heading());
     }
 
+    if (controller->get_digital_new_press(DIGITAL_A)) {
+      imu->set_heading(0);
+    }
+
     /*
     auto pose = aps->get_pose();
     auto readings = aps->get_encoder_readings();

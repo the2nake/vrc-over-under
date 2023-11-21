@@ -6,13 +6,13 @@ void initialise_chassis() {
   // TODO: check reversals
   // !!!: input correct geometry data
   pros::Motor *motor_lf =
-      new pros::Motor(PORT_DRIVE_LF, pros::E_MOTOR_GEAR_BLUE, false,
+      new pros::Motor(PORT_DRIVE_LF, pros::E_MOTOR_GEAR_BLUE, true,
                       pros::E_MOTOR_ENCODER_DEGREES);
   pros::Motor *motor_lm =
-      new pros::Motor(PORT_DRIVE_LM, pros::E_MOTOR_GEAR_BLUE, false,
+      new pros::Motor(PORT_DRIVE_LM, pros::E_MOTOR_GEAR_BLUE, true,
                       pros::E_MOTOR_ENCODER_DEGREES);
   pros::Motor *motor_lb =
-      new pros::Motor(PORT_DRIVE_LB, pros::E_MOTOR_GEAR_BLUE, false,
+      new pros::Motor(PORT_DRIVE_LB, pros::E_MOTOR_GEAR_BLUE, true,
                       pros::E_MOTOR_ENCODER_DEGREES);
 
   pros::Motor *motor_rf =

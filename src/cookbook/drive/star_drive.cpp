@@ -45,10 +45,12 @@ StarDrive *StarDrive::Builder::build() {
 
 StarDriveVelocities StarDrive::drive_relative(float x, float y, float r,
                                               bool boost) {
-  // scale down x and y to have a combined magnitude of one
+  // scale down x and y to have a combined max magnitude of one
   float v = polar_radius<float>(x, y);
-  x /= v;
-  y /= v;
+  if (v > 1.0) {
+    x /= v;
+    y /= v;
+  }
 
   // calculate wheel velocities for translation
   float v_lf = x + y;
@@ -74,28 +76,34 @@ StarDriveVelocities StarDrive::drive_relative(float x, float y, float r,
   v_lm += boost_scale * r;
   v_rm -= boost_scale * r;
 
-  // create output
+  // create output, skipping over boost motors if boost = false
   std::vector<float> velocities = {v_lf, 0, v_lb, v_rf, 0, v_rb};
   if (boost) {
     velocities = {v_lf, v_lm, v_lb, v_rf, v_rm, v_rb};
   }
 
   // limit everything down to 1 if above 1
-  float maximum =
-      *(std::max_element(velocities.begin(), velocities.end()).base());
-  if (maximum > 1.0) {
-    for (int i = 0; i < velocities.size(); i++) {
-      velocities[i] /= maximum;
+  float fastest = std::abs(velocities[0]);
+  for (int i = 1; i < velocities.size(); i++) {
+    if (std::abs(velocities[i]) > fastest) {
+      fastest = std::abs(velocities[i]);
     }
   }
 
-  // move the motors, skipping over boost motors
-  for (int i = 0; i < velocities.size(); i++) {
-    if (velocities[i] < 0.001) {
-      continue;
+  if (std::abs(fastest) > 1.0) {
+    for (int i = 0; i < velocities.size(); i++) {
+      velocities[i] /= std::abs(fastest);
     }
-    motors[i]->move_velocity(rpm_from_gearset(motors[i]->get_gearing()) *
-                             velocities[i]);
+  }
+
+  // move the motors
+  for (int i = 0; i < velocities.size(); i++) {
+    auto rpm = rpm_from_gearset(motors[i]->get_gearing());
+    if (std::abs(velocities[i]) > 0.001) {
+      motors[i]->move_velocity(rpm * velocities[i]);
+    } else {
+      motors[i]->brake();
+    }
   }
 
   // return the velocities
@@ -113,7 +121,6 @@ StarDriveVelocities StarDrive::drive_relative(float x, float y, float r,
 
 StarDriveVelocities StarDrive::drive_field_based(float x, float y, float r,
                                                  float heading, bool boost) {
-
   heading = mod(heading, 360.0);
   // anticlockwise rotation matrix
   auto x_r = x * cos_deg(heading) + y * sin_deg(heading);
