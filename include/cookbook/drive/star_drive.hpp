@@ -16,7 +16,7 @@ struct StarDriveVelocities {
 
 class StarDrive {
 public:
-  class Builder {
+  class StarDriveBuilder {
   public:
     /**
      * @brief adds preconfigured motors to the drive. motors should be
@@ -25,7 +25,7 @@ public:
      * then left to right. lf -> lm -> lb -> rf -> rm -> rb
      * @return the builder class
      */
-    Builder &with_motors(std::vector<pros::Motor *> motors);
+    StarDriveBuilder &with_motors(std::vector<pros::Motor *> motors);
 
     /**
      * @brief specify the geometry of the drive. required for smooth rotation
@@ -35,7 +35,7 @@ public:
      * wheels
      * @return the builder class
      */
-    Builder &with_geometry(float boost_width, float diagonal);
+    StarDriveBuilder &with_geometry(float boost_width, float diagonal);
 
     /**
      * @brief creates the drive object
@@ -49,7 +49,7 @@ public:
     float diagonal = 0.0;
     std::vector<pros::Motor *> motors = {};
   };
-  static Builder *builder() { return new Builder(); }
+  static StarDriveBuilder *builder() { return new StarDriveBuilder(); }
 
   /**
    * @brief moves the drive, relative to its current orientation

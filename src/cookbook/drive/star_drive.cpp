@@ -2,8 +2,8 @@
 #include "api.h"
 #include "cookbook/util.hpp"
 
-StarDrive::Builder &
-StarDrive::Builder::with_motors(std::vector<pros::Motor *> motors) {
+StarDrive::StarDriveBuilder &
+StarDrive::StarDriveBuilder::with_motors(std::vector<pros::Motor *> motors) {
   for (auto motor : motors) {
     if (motor == nullptr || errno == ENXIO || errno == ENODEV) {
       failed = true;
@@ -16,7 +16,7 @@ StarDrive::Builder::with_motors(std::vector<pros::Motor *> motors) {
   return *this;
 }
 
-StarDrive::Builder &StarDrive::Builder::with_geometry(float boost_width,
+StarDrive::StarDriveBuilder &StarDrive::StarDriveBuilder::with_geometry(float boost_width,
                                                       float diagonal) {
   if (boost_width > diagonal) {
     // only slowing down boost will be implemented
@@ -29,16 +29,16 @@ StarDrive::Builder &StarDrive::Builder::with_geometry(float boost_width,
   return *this;
 }
 
-StarDrive *StarDrive::Builder::build() {
+StarDrive *StarDrive::StarDriveBuilder::build() {
   if (failed) {
     return nullptr;
   }
 
   StarDrive *drive = new StarDrive();
 
-  drive->boost_width = this->boost_width;
-  drive->diagonal = this->diagonal;
-  drive->motors = this->motors;
+  drive->boost_width = boost_width;
+  drive->diagonal = diagonal;
+  drive->motors = motors;
 
   return drive;
 }
