@@ -64,6 +64,8 @@ void autonomous() {}
 void opcontrol() {
   pros::Controller *controller =
       new pros::Controller(pros::E_CONTROLLER_MASTER);
+
+  // graph setup
   gui::Graph *graph = new gui::Graph();
   graph->set_display_region({244, 4, 232, 232});
   graph->set_window(-1000.0, -1000.0, 2000.0, 2000.0);
@@ -73,19 +75,20 @@ void opcontrol() {
   while (program_running) {
     auto cycle_start = std::chrono::high_resolution_clock::now();
 
+    // INPUT
     auto input_lx = controller->get_analog(ANALOG_LEFT_X) / 127.0;
     auto input_rx = controller->get_analog(ANALOG_RIGHT_X) / 127.0;
     auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
+
+    imu->update_heading();
+
+    // OUTPUT
 
     if (std::abs(input_lx) < joystick_threshold &&
         std::abs(input_rx) < joystick_threshold &&
         std::abs(input_ry) < joystick_threshold) {
       chassis->brake();
     } else {
-      // TODO: improve sensor code by adding imu multiplier
-      // necessary since once the imu heading ticks over 360 multiplication no
-      // longer is possible. use shorter_turn function from cookbook utils
-
       chassis->drive_field_based(input_rx, input_ry, input_lx,
                                  imu->get_heading());
     }

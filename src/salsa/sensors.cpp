@@ -1,12 +1,16 @@
 #include "salsa/api.hpp"
 #include "api.h"
 
-pros::Imu *imu = nullptr;
+pros::Imu *default_imu = nullptr;
+CustomImu *imu = nullptr;
 
 void initialise_sensors() {
-  imu = new pros::Imu(PORT_IMU);
-  imu->reset();
-  while (imu->is_calibrating()) {
+  default_imu = new pros::Imu(PORT_IMU);
+  default_imu->reset();
+  while (default_imu->is_calibrating()) {
     pros::delay(40);
   }
+
+  imu = new CustomImu(default_imu);
+  imu->set_multiplier(0.997128639);
 }
