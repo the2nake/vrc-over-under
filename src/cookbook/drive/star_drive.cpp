@@ -100,7 +100,7 @@ StarDriveVelocities StarDrive::drive_relative(float x, float y, float r,
   for (int i = 0; i < velocities.size(); i++) {
     auto rpm = rpm_from_gearset(motors[i]->get_gearing());
     if (std::abs(velocities[i]) > 0.001) {
-      motors[i]->move_velocity(rpm * velocities[i]);
+      motors[i]->move_voltage(12000 * velocities[i]);
     } else {
       motors[i]->brake();
     }
