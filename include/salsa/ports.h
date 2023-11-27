@@ -6,7 +6,7 @@
 #define PORT_DRIVE_LM 19
 #define PORT_DRIVE_LB 20
 
-#define PORT_IMU 5
+#define PORT_IMU 11
 
 #define PORT_DRIVE_RF 8
 #define PORT_DRIVE_RM 9

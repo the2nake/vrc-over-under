@@ -4,6 +4,7 @@
 
 #include "gui.hpp"
 
+#include <iomanip>
 #include <chrono>
 
 namespace config {
@@ -45,6 +46,7 @@ void initialize() {
   program_delay_per_cycle =
       std::max(1000.0 / program_update_hz, 5.0); // wait no lower than 5 ms
 
+  initialise_devices();
   initialise_chassis();
   initialise_sensors();
 
@@ -96,6 +98,11 @@ void opcontrol() {
     if (controller->get_digital_new_press(DIGITAL_A)) {
       imu->set_heading(0);
     }
+
+    // debug 
+
+    Pose pose = odom->get_pose();
+    pros::screen::print(pros::E_TEXT_MEDIUM, 0, "X, Y: %.2f, %.2f", pose.x, pose.y);
 
     /*
     auto pose = aps->get_pose();

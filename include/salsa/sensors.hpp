@@ -5,5 +5,6 @@
 
 extern pros::Imu *default_imu;
 extern CustomImu *imu;
+extern Odometry *odom;
 
 void initialise_sensors();

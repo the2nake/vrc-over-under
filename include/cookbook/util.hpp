@@ -30,17 +30,6 @@ template <typename T> struct Segment {
 };
 
 /**
- * @brief Prints to the screen with pros::E_TEXT_MEDIUM
- *
- * @param
- */
-template <typename... Params>
-void qprint(const std::int16_t line,
-           const char *text, Params... args) {
-  pros::c::screen_print(pros::E_TEXT_MEDIUM, line, text, convert_args(args)...);
-}
-
-/**
  * Get the rpm of a gearset
  *a
  * @param gearing The gearset
