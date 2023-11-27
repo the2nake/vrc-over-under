@@ -11,3 +11,8 @@
 #define PORT_DRIVE_RF 8
 #define PORT_DRIVE_RM 9
 #define PORT_DRIVE_RB 10
+
+#define PORT_PTO_LEFT 16
+#define PORT_PTO_RIGHT 6
+
+#define PORT_CATA_SWITCH 'a'

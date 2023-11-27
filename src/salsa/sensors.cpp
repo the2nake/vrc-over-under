@@ -2,10 +2,14 @@
 #include "salsa/api.hpp"
 
 pros::Imu *default_imu = nullptr;
+pros::ADIDigitalIn *catapult_loaded_switch = nullptr;
 CustomImu *imu = nullptr;
 Odometry *odom = nullptr;
 
 void initialise_sensors() {
+  // set up catapult switch
+  catapult_loaded_switch = new pros::ADIDigitalIn(PORT_CATA_SWITCH);
+
   // set up imu
   default_imu = new pros::Imu(PORT_IMU);
   default_imu->reset();

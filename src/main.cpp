@@ -49,6 +49,7 @@ void initialize() {
   initialise_devices();
   initialise_chassis();
   initialise_sensors();
+  initialise_catapult();
 
   // pros::Task aps_update{aps_update_handler};
 
@@ -100,7 +101,14 @@ void opcontrol() {
       imu->set_heading(0);
     }
 
-    // debug 
+    if (controller->get_digital(DIGITAL_R2)) {
+      if (catapult_is_loaded() && loading.load() == false &&
+          firing.load() == false) {
+        fire_catapult_async();
+        pros::delay(1);
+        load_catapult_async();
+      }
+    }
 
     // debug
     Pose pose = odom->get_pose();
