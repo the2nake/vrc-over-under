@@ -90,7 +90,7 @@ public:
   static OdometryBuilder *builder() { return new OdometryBuilder(); }
 
   Pose get_pose() { return {x.load(), y.load(), heading.load()}; }
-  void update(); // TODO: implementation
+  void update();
   void auto_update(double ms_interval); // TODO: implementation
 
 private:
