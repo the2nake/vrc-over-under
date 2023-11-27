@@ -110,6 +110,16 @@ void opcontrol() {
       }
     }
 
+    if (loading.load() == false && firing.load() == false) {
+      if (controller->get_digital(DIGITAL_R1)) {
+        motor_pto_l->move_voltage(-12000);
+        motor_pto_r->move_voltage(-12000);
+      } else {
+        motor_pto_l->brake();
+        motor_pto_r->brake();
+      }
+    }
+
     // debug
     Pose pose = odom->get_pose();
     pros::screen::print(pros::E_TEXT_MEDIUM, 0, "X, Y: %.2f, %.2f", pose.x,
