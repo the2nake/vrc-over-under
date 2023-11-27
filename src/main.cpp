@@ -4,8 +4,8 @@
 
 #include "gui.hpp"
 
-#include <iomanip>
 #include <chrono>
+#include <iomanip>
 
 namespace config {
 bool program_running;
@@ -83,6 +83,7 @@ void opcontrol() {
     auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
 
     imu->update_heading();
+    odom->update();
 
     // OUTPUT
 
@@ -101,8 +102,16 @@ void opcontrol() {
 
     // debug 
 
+    // debug
     Pose pose = odom->get_pose();
-    pros::screen::print(pros::E_TEXT_MEDIUM, 0, "X, Y: %.2f, %.2f", pose.x, pose.y);
+    pros::screen::print(pros::E_TEXT_MEDIUM, 0, "X, Y: %.2f, %.2f", pose.x,
+                        pose.y);
+    pros::screen::print(pros::E_TEXT_MEDIUM, 1, "Heading: %.2f", pose.heading);
+
+    if (points.size() > 100) {
+      points.erase(points.begin());
+    }
+    points.push_back({pose.x, pose.y});
 
     /*
     auto pose = aps->get_pose();

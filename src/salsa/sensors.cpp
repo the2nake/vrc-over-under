@@ -19,8 +19,8 @@ void initialise_sensors() {
   // set up odometry
   odom = Odometry::OdometryBuilder()
              .with_heading_imu(imu)
-             .with_x_tracker(motor_lf, 110.0 / 360.0, -393.573 / 2.0)
-             .with_y_tracker(motor_lb, 110.0 / 360.0, -393.573 / 2.0)
+             .with_y_tracker(motor_lf, 110.0 / 360.0, -393.573 / 2.0)
+             .with_x_tracker(motor_lb, -110.0 / 360.0, -393.573 / 2.0)
              .with_tracker_rotation(45.0)
              .build();
 }

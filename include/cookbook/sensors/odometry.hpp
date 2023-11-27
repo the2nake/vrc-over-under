@@ -91,7 +91,7 @@ public:
 
   Pose get_pose() { return {x.load(), y.load(), heading.load()}; }
   void update(); // TODO: implementation
-  void auto_update(); // TODO: implementation
+  void auto_update(double ms_interval); // TODO: implementation
 
 private:
   Odometry() {}
@@ -100,6 +100,10 @@ private:
 
   std::vector<std::pair<pros::Motor *, TrackerConfig>> motor_x_trackers = {};
   std::vector<std::pair<pros::Motor *, TrackerConfig>> motor_y_trackers = {};
+
+  std::vector<double> prev_motor_x_enc_vals = {};
+  std::vector<double> prev_motor_y_enc_vals = {};
+  double prev_heading = 0.0;
 
   // to implement this just do odometry as usual and then rotate the local
   // vector by an additional [tracker_rotation] degrees before adding to the
