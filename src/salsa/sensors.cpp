@@ -2,14 +2,13 @@
 #include "salsa/api.hpp"
 
 pros::Imu *default_imu = nullptr;
-pros::ADIDigitalIn *catapult_loaded_switch = nullptr;
 CustomImu *imu = nullptr;
+
+pros::ADIEncoder *x_enc = nullptr;
+pros::ADIEncoder *y_enc = nullptr;
 Odometry *odom = nullptr;
 
 void initialise_sensors() {
-  // set up catapult switch
-  catapult_loaded_switch = new pros::ADIDigitalIn(PORT_CATA_SWITCH);
-
   // set up imu
   default_imu = new pros::Imu(PORT_IMU);
   default_imu->reset();
@@ -18,13 +17,16 @@ void initialise_sensors() {
   }
 
   imu = new CustomImu(default_imu);
-  imu->set_multiplier(360.0/356.5);
+  imu->set_multiplier((5.0 * 360.0) / (5.0 * 360.0 + 15.438));
+
+  x_enc = new pros::ADIEncoder(X_AXIS_TOP, X_AXIS_BOTTOM, false);
+  y_enc = new pros::ADIEncoder(Y_AXIS_TOP, Y_AXIS_BOTTOM, false);
 
   // set up odometry
   odom = Odometry::OdometryBuilder()
              .with_heading_imu(imu)
-             .with_y_tracker(motor_lf, 110.0 / 360.0, -393.573 / 2.0)
-             .with_x_tracker(motor_lb, -110.0 / 360.0, -393.573 / 2.0)
-             .with_tracker_rotation(45.0)
+             .with_y_tracker(y_enc, 220.0 / 360.0, 4.7625)
+             .with_x_tracker(x_enc, -220.0 / 360.0, -107.95)
+             .with_tracker_rotation(0.0)
              .build();
 }

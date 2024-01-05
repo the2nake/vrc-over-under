@@ -26,10 +26,10 @@ public:
      * encoder)
      * @param motor a pointer to the motor
      * @param travel_per_encoder_unit wheel travel per unit of the motor
-     * encoder. use any units perferred for length, but make sure all inputs to
+     * encoder. use any units preferred for length, but make sure all inputs to
      * the odometry class are in that same length unit
      * @param tracker_y_coord the y coordinate of the tracking wheel. positive
-     * is up, negative is down. use any units perferred for length, but make
+     * is up, negative is down. use any units preferred for length, but make
      * sure all inputs to the odometry class are in that same length unit
      * @returns the builder object
      */
@@ -42,14 +42,44 @@ public:
      * encoder)
      * @param motor a pointer to the motor
      * @param travel_per_encoder_unit wheel travel per unit of the motor
-     * encoder. use any units perferred for length, but make sure all inputs to
+     * encoder. use any units preferred for length, but make sure all inputs to
      * the odometry class are in that same length unit
      * @param tracker_x_coord the x coordinate of the tracking wheel. positive
-     * is right, negative is left. use any units perferred for length, but make
+     * is right, negative is left. use any units preferred for length, but make
      * sure all inputs to the odometry class are in that same length unit
      * @returns the builder object
      */
     OdometryBuilder &with_y_tracker(pros::Motor *motor,
+                                    double travel_per_encoder_unit,
+                                    double tracker_x_coord);
+
+    /**
+     * @brief adds an x-axis tracking wheel using an optical shaft encoder
+     * @param sensor a pointer to the sensor
+     * @param travel_per_encoder_unit wheel travel per unit of the motor
+     * encoder. use any units preferred for length, but make sure all inputs to
+     * the odometry class are in that same length unit
+     * @param tracker_y_coord the y coordinate of the tracking wheel. positive
+     * is up, negative is down. use any units preferred for length, but make
+     * sure all inputs to the odometry class are in that same length unit
+     * @returns the builder object
+     */
+    OdometryBuilder &with_x_tracker(pros::ADIEncoder *sensor,
+                                    double travel_per_encoder_unit,
+                                    double tracker_y_coord);
+
+    /**
+     * @brief adds an y-axis tracking wheel using an optical shaft encoder
+     * @param motor a pointer to the sensor
+     * @param travel_per_encoder_unit wheel travel per unit of the motor
+     * encoder. use any units preferred for length, but make sure all inputs to
+     * the odometry class are in that same length unit
+     * @param tracker_x_coord the x coordinate of the tracking wheel. positive
+     * is right, negative is left. use any units preferred for length, but make
+     * sure all inputs to the odometry class are in that same length unit
+     * @returns the builder object
+     */
+    OdometryBuilder &with_y_tracker(pros::ADIEncoder *sensor,
                                     double travel_per_encoder_unit,
                                     double tracker_x_coord);
 
@@ -83,10 +113,14 @@ public:
     std::vector<std::pair<pros::Motor *, TrackerConfig>> motor_x_trackers = {};
     std::vector<std::pair<pros::Motor *, TrackerConfig>> motor_y_trackers = {};
 
+    std::pair<pros::ADIEncoder *, TrackerConfig> adi_x_tracker;
+    std::pair<pros::ADIEncoder *, TrackerConfig> adi_y_tracker;
+
     double tracker_rotation = 0.0;
 
     CustomImu *imu = nullptr;
   };
+
   static OdometryBuilder *builder() { return new OdometryBuilder(); }
 
   void set_heading(double heading) {
@@ -118,6 +152,12 @@ private:
 
   std::vector<std::pair<pros::Motor *, TrackerConfig>> motor_x_trackers = {};
   std::vector<std::pair<pros::Motor *, TrackerConfig>> motor_y_trackers = {};
+
+  std::pair<pros::ADIEncoder *, TrackerConfig> adi_x_tracker;
+  std::pair<pros::ADIEncoder *, TrackerConfig> adi_y_tracker;
+
+  double prev_adi_x_enc_val = 0.0;
+  double prev_adi_y_enc_val = 0.0;
 
   std::vector<double> prev_motor_x_enc_vals = {};
   std::vector<double> prev_motor_y_enc_vals = {};

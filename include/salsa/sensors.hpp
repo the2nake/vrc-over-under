@@ -5,8 +5,10 @@
 #include "cookbook/api.hpp"
 
 extern pros::Imu *default_imu;
-extern pros::ADIDigitalIn* catapult_loaded_switch;
 extern CustomImu *imu;
+
+extern pros::ADIEncoder* x_enc;
+extern pros::ADIEncoder* y_enc;
 extern Odometry *odom;
 
 void initialise_sensors();
