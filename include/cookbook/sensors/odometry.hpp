@@ -19,6 +19,28 @@ public:
     double tracker_coord;
   };
 
+  void set_heading(double heading) {
+    while (!mutex.take(5)) {
+      pros::delay(1);
+    }
+    prev_heading = heading; // make sure odometry isn't messed up
+    this->heading = heading;
+    mutex.give();
+  }
+
+  void set_position(double x, double y) {
+    while (!mutex.take(5)) {
+      pros::delay(1);
+    }
+    this->x = x;
+    this->y = y;
+    mutex.give();
+  }
+
+  Pose get_pose() { return {x.load(), y.load(), heading.load()}; }
+  void update();
+  void auto_update(double ms_interval); // TODO: implementation
+
   class OdometryBuilder {
   public:
     /**
@@ -120,31 +142,7 @@ public:
 
     CustomImu *imu = nullptr;
   };
-
   static OdometryBuilder *builder() { return new OdometryBuilder(); }
-
-  void set_heading(double heading) {
-    while (!mutex.take(5)) {
-      pros::delay(1);
-    }
-    prev_heading = heading; // make sure odometry isn't messed up
-    this->heading = heading;
-    mutex.give();
-  }
-
-  void set_position(double x, double y) {
-    while (!mutex.take(5)) {
-      pros::delay(1);
-    }
-    this->x = x;
-    this->y = y;
-    mutex.give();
-  }
-
-  Pose get_pose() { return {x.load(), y.load(), heading.load()}; }
-  void update();
-  void auto_update(double ms_interval); // TODO: implementation
-
 private:
   Odometry() {}
   bool heading_uses_imu = false;

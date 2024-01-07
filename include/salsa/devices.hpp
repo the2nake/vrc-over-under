@@ -9,4 +9,6 @@ extern pros::Motor *motor_rf;
 extern pros::Motor *motor_rm;
 extern pros::Motor *motor_rb;
 
+extern pros::Motor *motor_intake;
+
 void initialise_devices();

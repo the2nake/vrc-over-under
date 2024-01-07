@@ -16,6 +16,32 @@ struct StarDriveVelocities {
 
 class StarDrive {
 public:
+  /**
+   * @brief moves the drive, relative to its current orientation
+   * @param x the x velocity, from 1 (right) to -1 (left)
+   * @param y the y velocity, from 1 (forward) to -1 (back)
+   * @param r the rotation velocity, from 1 (clockwise) to -1 (anticlockwise)
+   * @param boost whether to use the boost motors
+   * @return the velocities given to the motors. useful for ptos
+   */
+  StarDriveVelocities drive_relative(float x, float y, float r,
+                                     bool boost = true);
+
+  /**
+   * @brief moves the drive, with field oriented control
+   * @param x the x velocity, from 1 (right) to -1 (left)
+   * @param y the y velocity, from 1 (up) to -1 (down)
+   * @param r the rotation velocity, from 1 (clockwise) to -1 (anticlockwise)
+   * @param heading the current heading of the robot in degrees
+   * @param boost whether to use the boost motors
+   * @return the velocities given to the motors. useful for ptos
+   */
+  StarDriveVelocities drive_field_based(float x, float y, float r,
+                                        float heading, bool boost = true);
+
+  void set_brake_mode(pros::motor_brake_mode_e_t mode);
+  void brake();
+
   class StarDriveBuilder {
   public:
     /**
@@ -50,33 +76,6 @@ public:
     std::vector<pros::Motor *> motors = {};
   };
   static StarDriveBuilder *builder() { return new StarDriveBuilder(); }
-
-  /**
-   * @brief moves the drive, relative to its current orientation
-   * @param x the x velocity, from 1 (right) to -1 (left)
-   * @param y the y velocity, from 1 (forward) to -1 (back)
-   * @param r the rotation velocity, from 1 (clockwise) to -1 (anticlockwise)
-   * @param boost whether to use the boost motors
-   * @return the velocities given to the motors. useful for ptos
-   */
-  StarDriveVelocities drive_relative(float x, float y, float r,
-                                     bool boost = true);
-
-  /**
-   * @brief moves the drive, with field oriented control
-   * @param x the x velocity, from 1 (right) to -1 (left)
-   * @param y the y velocity, from 1 (up) to -1 (down)
-   * @param r the rotation velocity, from 1 (clockwise) to -1 (anticlockwise)
-   * @param heading the current heading of the robot in degrees
-   * @param boost whether to use the boost motors
-   * @return the velocities given to the motors. useful for ptos
-   */
-  StarDriveVelocities drive_field_based(float x, float y, float r,
-                                        float heading, bool boost = true);
-
-  void set_brake_mode(pros::motor_brake_mode_e_t mode);
-  void brake();
-
 private:
   StarDrive() {}
   float boost_width = 0.0;

@@ -76,6 +76,29 @@ void opcontrol() {
   odom->set_heading(0);
   odom->set_position(0, 0);
 
+  StarDriveController *drive_controller = StarDriveController::builder()
+                                              ->with_drive(chassis)
+                                              .with_odometry(odom)
+                                              .build();
+  drive_controller->configure_pidf_x(1.0 / 200.0, 0.00000005, 2);
+  drive_controller->configure_pidf_y(1.0 / 200.0, 0.00000005, 2);
+  drive_controller->configure_pidf_r(1.0 / 270.0, 0.0000000, 0);
+  drive_controller->configure_stop_threshold(0.04);
+  drive_controller->move_to_pose_pid_async({600, 600, 340});
+
+  pros::delay(250);
+  motor_intake->move_velocity(10000);
+  pros::delay(500);
+  motor_intake->brake();
+
+  while (!drive_controller->is_motion_complete()) {
+    pros::delay(20);
+  }
+
+  motor_intake->move_velocity(10000);
+  pros::delay(2000);
+  motor_intake->brake();
+
   while (program_running) {
     auto cycle_start = std::chrono::high_resolution_clock::now();
 
@@ -88,7 +111,7 @@ void opcontrol() {
     if (std::abs(input_lx) < joystick_threshold &&
         std::abs(input_rx) < joystick_threshold &&
         std::abs(input_ry) < joystick_threshold) {
-      chassis->brake();
+      // chassis->brake();
     } else {
       auto velocities = chassis->drive_field_based(input_rx, input_ry, input_lx,
                                                    imu->get_heading());

@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "The Stars Above",
+    "project_name": "robos today",
     "target": "v5",
     "templates": {
       "kernel": {
@@ -309,8 +309,8 @@
       }
     },
     "upload_options": {
-      "description": "competition code",
-      "icon": "planet",
+      "description": "much cool",
+      "icon": "pros",
       "after": "none"
     }
   }
