@@ -15,6 +15,9 @@ float joystick_threshold;
 double program_delay_per_cycle;
 
 int aps_update_hz;
+
+pros::controller_digital_e_t intake_in;
+pros::controller_digital_e_t intake_out;
 }; // namespace config
 
 using namespace config;
@@ -37,8 +40,8 @@ void initialize() {
 
   joystick_threshold = 0.02;
 
-  // double imu_multiplier = 0.998673983;
-  // double imu_drift = 0.0;
+  intake_in = pros::E_CONTROLLER_DIGITAL_R2;
+  intake_out = pros::E_CONTROLLER_DIGITAL_R1;
 
   //  ===== END CONFIG =====
 
@@ -60,7 +63,43 @@ void disabled() {}
 
 void competition_initialize() {}
 
-void autonomous() {}
+void autonomous() {
+  odom->set_heading(0);
+  odom->set_position(0, 0);
+
+  StarDriveController *drive_controller = StarDriveController::builder()
+                                              ->with_drive(chassis)
+                                              .with_odometry(odom)
+                                              .build();
+  drive_controller->configure_pidf_x(1.0 / 200.0, 0.00000003, 2);
+  drive_controller->configure_pidf_y(1.0 / 200.0, 0.00000003, 2);
+  drive_controller->configure_pidf_r(1.0 / 270.0, 0.0000000, 0);
+  drive_controller->configure_stop_threshold(0.04);
+  drive_controller->move_to_pose_pid_async({600, 600, 340});
+
+  pros::delay(250);
+  motor_intake->move_velocity(10000);
+  pros::delay(500);
+  motor_intake->brake();
+
+  while (!drive_controller->is_motion_complete()) {
+    pros::delay(20);
+  }
+
+  motor_intake->move_velocity(10000);
+  pros::delay(1000);
+  motor_intake->brake();
+}
+
+void intake_control(pros::Controller *controller) {
+  if (controller->get_digital(config::intake_in)) {
+    motor_intake->move_voltage(12000);
+  } else if (controller->get_digital(config::intake_out)) {
+    motor_intake->move_voltage(-12000);
+  } else {
+    motor_intake->brake();
+  }
+}
 
 void opcontrol() {
   pros::Controller *controller =
@@ -76,29 +115,6 @@ void opcontrol() {
   odom->set_heading(0);
   odom->set_position(0, 0);
 
-  StarDriveController *drive_controller = StarDriveController::builder()
-                                              ->with_drive(chassis)
-                                              .with_odometry(odom)
-                                              .build();
-  drive_controller->configure_pidf_x(1.0 / 200.0, 0.00000005, 2);
-  drive_controller->configure_pidf_y(1.0 / 200.0, 0.00000005, 2);
-  drive_controller->configure_pidf_r(1.0 / 270.0, 0.0000000, 0);
-  drive_controller->configure_stop_threshold(0.04);
-  drive_controller->move_to_pose_pid_async({600, 600, 340});
-
-  pros::delay(250);
-  motor_intake->move_velocity(10000);
-  pros::delay(500);
-  motor_intake->brake();
-
-  while (!drive_controller->is_motion_complete()) {
-    pros::delay(20);
-  }
-
-  motor_intake->move_velocity(10000);
-  pros::delay(2000);
-  motor_intake->brake();
-
   while (program_running) {
     auto cycle_start = std::chrono::high_resolution_clock::now();
 
@@ -111,7 +127,7 @@ void opcontrol() {
     if (std::abs(input_lx) < joystick_threshold &&
         std::abs(input_rx) < joystick_threshold &&
         std::abs(input_ry) < joystick_threshold) {
-      // chassis->brake();
+      chassis->brake();
     } else {
       auto velocities = chassis->drive_field_based(input_rx, input_ry, input_lx,
                                                    imu->get_heading());
@@ -121,6 +137,8 @@ void opcontrol() {
       imu->set_heading(0);
       odom->set_heading(0);
     }
+
+    intake_control(controller);
 
     // debug
     Pose pose = odom->get_pose();
