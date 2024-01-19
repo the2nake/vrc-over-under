@@ -9,6 +9,12 @@ pros::Motor *motor_rm = nullptr;
 pros::Motor *motor_rb = nullptr;
 
 pros::Motor *motor_intake = nullptr;
+pros::Motor *motor_kicker = nullptr;
+
+pros::ADIDigitalOut *piston_lift = nullptr;
+pros::ADIDigitalOut *piston_wings = nullptr;
+bool is_lift_out = false;
+bool is_wings_out = false;
 
 void initialise_devices() {
   motor_lf = new pros::Motor(PORT_DRIVE_LF, pros::E_MOTOR_GEAR_BLUE, true,
@@ -28,4 +34,10 @@ void initialise_devices() {
   motor_intake = new pros::Motor(PORT_INTAKE, pros::E_MOTOR_GEAR_BLUE, true,
                                  pros::E_MOTOR_ENCODER_DEGREES);
   motor_intake->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+  motor_kicker = new pros::Motor(PORT_KICKER, pros::E_MOTOR_GEAR_RED, true,
+                                 pros::E_MOTOR_ENCODER_DEGREES);
+  motor_kicker->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+  piston_lift = new pros::ADIDigitalOut(PORT_LIFT, false);
+  piston_wings = new pros::ADIDigitalOut(PORT_WINGS, false);
 }

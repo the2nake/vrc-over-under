@@ -18,6 +18,10 @@ int aps_update_hz;
 
 pros::controller_digital_e_t intake_in;
 pros::controller_digital_e_t intake_out;
+
+pros::controller_digital_e_t kicker_shoot;
+pros::controller_digital_e_t lift_toggle;
+pros::controller_digital_e_t wings_toggle;
 }; // namespace config
 
 using namespace config;
@@ -42,6 +46,9 @@ void initialize() {
 
   intake_in = pros::E_CONTROLLER_DIGITAL_R2;
   intake_out = pros::E_CONTROLLER_DIGITAL_R1;
+  kicker_shoot = pros::E_CONTROLLER_DIGITAL_L1;
+  lift_toggle = pros::E_CONTROLLER_DIGITAL_L2;
+  wings_toggle = pros::E_CONTROLLER_DIGITAL_B;
 
   //  ===== END CONFIG =====
 
@@ -64,6 +71,7 @@ void disabled() {}
 void competition_initialize() {}
 
 void autonomous() {
+  /**
   odom->set_heading(0);
   odom->set_position(0, 0);
 
@@ -88,7 +96,7 @@ void autonomous() {
 
   motor_intake->move_velocity(10000);
   pros::delay(1000);
-  motor_intake->brake();
+  motor_intake->brake();*/
 }
 
 void intake_control(pros::Controller *controller) {
@@ -98,6 +106,20 @@ void intake_control(pros::Controller *controller) {
     motor_intake->move_voltage(-12000);
   } else {
     motor_intake->brake();
+  }
+}
+
+void wings_control(pros::Controller *controller) {
+  if (controller->get_digital_new_press(config::wings_toggle)) {
+    is_wings_out = !is_wings_out;
+    piston_wings->set_value(is_wings_out);
+  }
+}
+
+void lift_control(pros::Controller *controller) {
+  if (controller->get_digital_new_press(config::lift_toggle)) {
+    is_lift_out = !is_lift_out;
+    piston_lift->set_value(is_lift_out);
   }
 }
 
@@ -139,6 +161,8 @@ void opcontrol() {
     }
 
     intake_control(controller);
+    wings_control(controller);
+    lift_control(controller);
 
     // debug
     Pose pose = odom->get_pose();

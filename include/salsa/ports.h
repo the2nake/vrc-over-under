@@ -13,8 +13,12 @@
 #define PORT_DRIVE_RB 13
 
 #define PORT_INTAKE 15
+#define PORT_KICKER 16
 
 #define Y_AXIS_TOP 'A'
 #define Y_AXIS_BOTTOM 'B'
 #define X_AXIS_TOP 'C'
 #define X_AXIS_BOTTOM 'D'
+
+#define PORT_LIFT 'G'
+#define PORT_WINGS 'H'
