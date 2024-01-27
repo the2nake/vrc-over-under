@@ -21,7 +21,7 @@ public:
 
   // TODO: implement timeout
 
-  void move_to_pose_pid_async(Pose goal);
+  void move_to_pose_pid_async(Pose goal, int ms_timeout = 1000000000);
 
   class StarDriveControllerBuilder {
   public:

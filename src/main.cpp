@@ -46,9 +46,9 @@ void initialize() {
 
   intake_in = pros::E_CONTROLLER_DIGITAL_R2;
   intake_out = pros::E_CONTROLLER_DIGITAL_R1;
-  kicker_shoot = pros::E_CONTROLLER_DIGITAL_L1;
-  lift_toggle = pros::E_CONTROLLER_DIGITAL_L2;
-  wings_toggle = pros::E_CONTROLLER_DIGITAL_B;
+  kicker_shoot = pros::E_CONTROLLER_DIGITAL_L2;
+  wings_toggle = pros::E_CONTROLLER_DIGITAL_L1;
+  lift_toggle = pros::E_CONTROLLER_DIGITAL_UP;
 
   //  ===== END CONFIG =====
 
@@ -97,6 +97,73 @@ void autonomous() {
   motor_intake->move_velocity(10000);
   pros::delay(1000);
   motor_intake->brake();*/
+
+  odom->set_heading(90);
+  odom->set_position(0, 0);
+
+  chassis->drive_relative(0, -0.65, 0, true);
+  pros::delay(1300);
+  chassis->brake();
+
+  chassis->drive_relative(0, 0.6, 0, true);
+  pros::delay(200);
+  chassis->brake();
+
+  chassis->drive_relative(0.7, 0, -0.01, true);
+  pros::delay(1100);
+  chassis->brake();
+
+  chassis->drive_relative(0, -0.6, 0, true);
+  pros::delay(300);
+  chassis->brake();
+
+  chassis->drive_relative(0, 0, 0.6, true);
+  pros::delay(320);
+  chassis->brake();
+
+  piston_wings->set_value(true);
+  pros::delay(500);
+  chassis->drive_relative(0, -1, 0, true);
+  pros::delay(2000);
+  chassis->brake();
+
+  chassis->drive_relative(0, 0.7, 0, true);
+  pros::delay(2000);
+  chassis->brake();
+
+  piston_wings->set_value(false);
+
+  odom->set_heading(180);
+  odom->set_position(0, 0);
+
+  /*  chassis->drive_relative(0, -1, 0, true);
+    pros::delay(2000);
+    chassis->brake();
+
+    odom->set_heading(0);
+    odom->set_position(90, 0);*/
+  /*
+  StarDriveController *drive_controller = StarDriveController::builder()
+                                              ->with_drive(chassis)
+                                              .with_odometry(odom)
+                                              .build();
+  drive_controller->configure_pidf_x(1.0 / 200.0, 0.00000007, 3);
+  drive_controller->configure_pidf_y(1.0 / 200.0, 0.00000007, 3);
+  drive_controller->configure_pidf_r(1.0 / 60.0, 0.00000002, 0);
+  drive_controller->configure_stop_threshold(0.05);
+
+  drive_controller->move_to_pose_pid_async({-50, 0, 270.0});
+  pros::delay(2000);
+
+  chassis->drive_relative(0, -0.4, 0, true);
+  pros::delay(1000);
+  chassis->brake();
+  piston_wings->set_value(true);
+
+  motor_kicker->move_velocity(80);
+  pros::delay(60000);
+  motor_kicker->brake();
+  */
 }
 
 void intake_control(pros::Controller *controller) {
@@ -106,6 +173,14 @@ void intake_control(pros::Controller *controller) {
     motor_intake->move_voltage(-12000);
   } else {
     motor_intake->brake();
+  }
+}
+
+void kicker_control(pros::Controller *controller) {
+  if (controller->get_digital(config::kicker_shoot)) {
+    motor_kicker->move_voltage(12000);
+  } else {
+    motor_kicker->brake();
   }
 }
 
@@ -134,9 +209,6 @@ void opcontrol() {
   graph->point_width = 3;
   std::vector<Point<double>> points = {{2.0, 2.0}};
 
-  odom->set_heading(0);
-  odom->set_position(0, 0);
-
   while (program_running) {
     auto cycle_start = std::chrono::high_resolution_clock::now();
 
@@ -163,6 +235,7 @@ void opcontrol() {
     intake_control(controller);
     wings_control(controller);
     lift_control(controller);
+    kicker_control(controller);
 
     // debug
     Pose pose = odom->get_pose();

@@ -26,7 +26,7 @@ void StarDriveController::configure_pidf_r(double p, double i, double d,
   r_pidf->configure(p, i, d, f);
 }
 
-void StarDriveController::move_to_pose_pid_async(Pose goal) {
+void StarDriveController::move_to_pose_pid_async(Pose goal, int ms_timeout) {
   motion_complete = false;
   x_pidf->set_target(goal.x);
   y_pidf->set_target(goal.y);
@@ -34,7 +34,10 @@ void StarDriveController::move_to_pose_pid_async(Pose goal) {
 
   pros::Task task{[=] {
     bool settled = false;
-    while (!settled) {
+    auto start = std::chrono::high_resolution_clock::now();
+    while (!settled/* || std::chrono::duration_cast<std::chrono::milliseconds>(
+                           std::chrono::high_resolution_clock::now() - start)
+                               .count() > ms_timeout*/) {
       auto pose = odom->get_pose();
 
       auto x_out = x_pidf->update_sensor(pose.x);
