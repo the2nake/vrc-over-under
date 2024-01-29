@@ -228,7 +228,7 @@ void opcontrol() {
     }
 
     if (controller->get_digital_new_press(DIGITAL_A)) {
-      imu->set_heading(0);
+      odom->set_heading(0);
       odom->set_heading(0);
     }
 

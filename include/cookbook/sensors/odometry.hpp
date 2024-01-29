@@ -23,6 +23,7 @@ public:
     while (!mutex.take(5)) {
       pros::delay(1);
     }
+    imu->set_heading(heading);
     prev_heading = heading; // make sure odometry isn't messed up
     this->heading = heading;
     mutex.give();
