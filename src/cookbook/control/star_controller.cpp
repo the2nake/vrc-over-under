@@ -35,9 +35,8 @@ void StarDriveController::move_to_pose_pid_async(Pose goal, int ms_timeout) {
   pros::Task task{[=] {
     bool settled = false;
     auto start = std::chrono::high_resolution_clock::now();
-    while (!settled/* || std::chrono::duration_cast<std::chrono::milliseconds>(
-                           std::chrono::high_resolution_clock::now() - start)
-                               .count() > ms_timeout*/) {
+
+    while (!(settled || motion_complete.load())) {
       auto pose = odom->get_pose();
 
       auto x_out = x_pidf->update_sensor(pose.x);
@@ -54,12 +53,22 @@ void StarDriveController::move_to_pose_pid_async(Pose goal, int ms_timeout) {
                 (std::abs(y_out) < stop_threshold) &&
                 (std::abs(r_out) < stop_threshold);
       pros::delay(20);
+
+      auto now = std::chrono::high_resolution_clock::now();
+      int ms_elapsed =
+          std::chrono::duration_cast<std::chrono::milliseconds>(now - start)
+              .count();
+      if (ms_elapsed > ms_timeout) {
+        break;
+      }
     }
 
     chassis->brake();
     motion_complete = true;
   }};
 }
+
+void StarDriveController::stop_async_motion() { motion_complete = true; }
 
 StarDriveController::StarDriveControllerBuilder &
 StarDriveController::StarDriveControllerBuilder::with_drive(

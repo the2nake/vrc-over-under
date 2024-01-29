@@ -19,9 +19,8 @@ public:
 
   bool is_motion_complete() { return motion_complete.load(); }
 
-  // TODO: implement timeout
-
-  void move_to_pose_pid_async(Pose goal, int ms_timeout = 1000000000);
+  void move_to_pose_pid_async(Pose goal, int ms_timeout = 1000000);
+  void stop_async_motion();
 
   class StarDriveControllerBuilder {
   public:
