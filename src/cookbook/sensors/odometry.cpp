@@ -1,6 +1,106 @@
 #include "cookbook/sensors/odometry.hpp"
 #include "cookbook/util.hpp"
-#include "odometry.hpp"
+
+void Odometry::update() {
+  double dh = 0.0;
+  if (heading_uses_imu) {
+    dh = shorter_turn(prev_heading, imu->get_heading(), 360.0);
+  } else if (heading_uses_motors)
+    ;
+
+  double x_sum = 0.0;
+  for (int i = 0; i < motor_x_trackers.size(); i++) {
+    double x_enc = motor_x_trackers[i].first->get_position();
+    double raw_diff = x_enc - prev_motor_x_enc_vals[i];
+    double dx_enc = raw_diff * motor_x_trackers[i].second.travel_per_unit;
+    if (std::abs(dh) < 0.05) {
+      x_sum += dx_enc;
+    } else {
+      x_sum +=
+          2 * sin_deg(dh / 2.0) *
+          (dx_enc / in_radians(dh) - motor_x_trackers[i].second.tracker_coord);
+    }
+    prev_motor_x_enc_vals[i] = x_enc;
+  }
+
+  double dx_l = 0.0;
+  if (motor_x_trackers.size() == 0) {
+    if (adi_x_tracker.first != nullptr) {
+      double x_enc = adi_x_tracker.first->get_value();
+      double raw_diff = x_enc - prev_adi_x_enc_val;
+      double dx_enc = raw_diff * adi_x_tracker.second.travel_per_unit;
+
+      if (std::abs(dh) < 0.05) {
+        dx_l = dx_enc;
+      } else {
+        dx_l = 2 * sin_deg(dh / 2.0) *
+               (dx_enc / in_radians(dh) - adi_x_tracker.second.tracker_coord);
+      }
+      prev_adi_x_enc_val = x_enc;
+    } else {
+    }
+  } else {
+    dx_l = x_sum / motor_x_trackers.size();
+  }
+
+  double y_sum = 0.0;
+  for (int i = 0; i < motor_y_trackers.size(); i++) {
+    double y_enc = motor_y_trackers[i].first->get_position();
+    double raw_diff = y_enc - prev_motor_y_enc_vals[i];
+    double dy_enc = raw_diff * motor_y_trackers[i].second.travel_per_unit;
+    if (std::abs(dh) < 0.05) {
+      y_sum += dy_enc;
+    } else {
+      y_sum +=
+          2 * sin_deg(dh / 2.0) *
+          (dy_enc / in_radians(dh) + motor_y_trackers[i].second.tracker_coord);
+    }
+    prev_motor_y_enc_vals[i] = y_enc;
+  }
+
+  double dy_l = 0.0;
+  if (motor_y_trackers.size() == 0) {
+    if (adi_y_tracker.first != nullptr) {
+      double y_enc = adi_y_tracker.first->get_value();
+      double raw_diff = y_enc - prev_adi_y_enc_val;
+      double dy_enc = raw_diff * adi_y_tracker.second.travel_per_unit;
+
+      if (std::abs(dh) < 0.05) {
+        dy_l = dy_enc;
+      } else {
+        dy_l = 2 * sin_deg(dh / 2.0) *
+               (dy_enc / in_radians(dh) - adi_y_tracker.second.tracker_coord);
+      }
+      prev_adi_y_enc_val = y_enc;
+    } else {
+    }
+  } else {
+    dy_l = y_sum / motor_y_trackers.size();
+  }
+
+  double new_heading = mod(prev_heading + dh, 360.0);
+
+  if (std::abs(dh) > 20) {
+    pros::screen::print(pros::E_TEXT_MEDIUM, 7, "WARNING! Large dH: %.2f!!!", dh);
+  }
+
+  // clockwise rotation matrix
+  auto dx_g = dx_l * cos_deg(new_heading + tracker_rotation) +
+              dy_l * sin_deg(new_heading + tracker_rotation);
+  auto dy_g = -dx_l * sin_deg(new_heading + tracker_rotation) +
+              dy_l * cos_deg(new_heading + tracker_rotation);
+
+  while (!mutex.take(5)) {
+    pros::delay(1);
+  }
+
+  x = x + dx_g;
+  y = y + dy_g;
+  heading = new_heading;
+  prev_heading = heading;
+
+  mutex.give();
+}
 
 Odometry::OdometryBuilder &
 Odometry::OdometryBuilder::with_x_tracker(pros::Motor *motor,
@@ -156,105 +256,4 @@ Odometry *Odometry::OdometryBuilder::build() {
   }
 
   return odometry;
-}
-
-void Odometry::update() {
-  double dh = 0.0;
-  if (heading_uses_imu) {
-    dh = shorter_turn(prev_heading, imu->get_heading(), 360.0);
-  } else if (heading_uses_motors)
-    ;
-
-  double x_sum = 0.0;
-  for (int i = 0; i < motor_x_trackers.size(); i++) {
-    double x_enc = motor_x_trackers[i].first->get_position();
-    double raw_diff = x_enc - prev_motor_x_enc_vals[i];
-    double dx_enc = raw_diff * motor_x_trackers[i].second.travel_per_unit;
-    if (std::abs(dh) < 0.05) {
-      x_sum += dx_enc;
-    } else {
-      x_sum +=
-          2 * sin_deg(dh / 2.0) *
-          (dx_enc / in_radians(dh) - motor_x_trackers[i].second.tracker_coord);
-    }
-    prev_motor_x_enc_vals[i] = x_enc;
-  }
-
-  double dx_l = 0.0;
-  if (motor_x_trackers.size() == 0) {
-    if (adi_x_tracker.first != nullptr) {
-      double x_enc = adi_x_tracker.first->get_value();
-      double raw_diff = x_enc - prev_adi_x_enc_val;
-      double dx_enc = raw_diff * adi_x_tracker.second.travel_per_unit;
-
-      if (std::abs(dh) < 0.05) {
-        dx_l = dx_enc;
-      } else {
-        dx_l = 2 * sin_deg(dh / 2.0) *
-               (dx_enc / in_radians(dh) - adi_x_tracker.second.tracker_coord);
-      }
-      prev_adi_x_enc_val = x_enc;
-    } else {
-    }
-  } else {
-    dx_l = x_sum / motor_x_trackers.size();
-  }
-
-  double y_sum = 0.0;
-  for (int i = 0; i < motor_y_trackers.size(); i++) {
-    double y_enc = motor_y_trackers[i].first->get_position();
-    double raw_diff = y_enc - prev_motor_y_enc_vals[i];
-    double dy_enc = raw_diff * motor_y_trackers[i].second.travel_per_unit;
-    if (std::abs(dh) < 0.05) {
-      y_sum += dy_enc;
-    } else {
-      y_sum +=
-          2 * sin_deg(dh / 2.0) *
-          (dy_enc / in_radians(dh) + motor_y_trackers[i].second.tracker_coord);
-    }
-    prev_motor_y_enc_vals[i] = y_enc;
-  }
-
-  double dy_l = 0.0;
-  if (motor_y_trackers.size() == 0) {
-    if (adi_y_tracker.first != nullptr) {
-      double y_enc = adi_y_tracker.first->get_value();
-      double raw_diff = y_enc - prev_adi_y_enc_val;
-      double dy_enc = raw_diff * adi_y_tracker.second.travel_per_unit;
-
-      if (std::abs(dh) < 0.05) {
-        dy_l = dy_enc;
-      } else {
-        dy_l = 2 * sin_deg(dh / 2.0) *
-               (dy_enc / in_radians(dh) - adi_y_tracker.second.tracker_coord);
-      }
-      prev_adi_y_enc_val = y_enc;
-    } else {
-    }
-  } else {
-    dy_l = y_sum / motor_y_trackers.size();
-  }
-
-  if (heading_uses_imu) {
-    dh = shorter_turn(prev_heading, imu->get_heading(), 360.0);
-  } else if (heading_uses_motors)
-    ;
-  double new_heading = prev_heading + dh;
-
-  // clockwise rotation matrix
-  auto dx_g = dx_l * cos_deg(new_heading + tracker_rotation) +
-              dy_l * sin_deg(new_heading + tracker_rotation);
-  auto dy_g = -dx_l * sin_deg(new_heading + tracker_rotation) +
-              dy_l * cos_deg(new_heading + tracker_rotation);
-
-  while (!mutex.take(5)) {
-    pros::delay(1);
-  }
-
-  x = x + dx_g;
-  y = y + dy_g;
-  heading = mod(new_heading, 360.0);
-  prev_heading = heading;
-
-  mutex.give();
 }

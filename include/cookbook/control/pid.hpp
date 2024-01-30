@@ -3,7 +3,6 @@
 #include "pros/rtos.hpp"
 
 #include <atomic>
-#include <chrono>
 
 class PIDFController {
 
@@ -30,5 +29,5 @@ private:
   std::atomic<double> output = 0.0;
   pros::Mutex mutex;
 
-  std::atomic<std::chrono::high_resolution_clock::time_point> last_update;
+  uint32_t last_update;
 };

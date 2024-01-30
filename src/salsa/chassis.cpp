@@ -10,5 +10,5 @@ void initialise_chassis() {
                 .with_motors(drive_motors)
                 .with_geometry(323.85, 393.573)
                 .build();
-  chassis->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+  chassis->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
 }

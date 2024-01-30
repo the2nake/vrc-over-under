@@ -3,6 +3,7 @@
 #include "pros/adi.hpp"
 #include "pros/motors.hpp"
 #include "pros/rtos.hpp"
+#include "pros/screen.hpp"
 
 #include <atomic>
 
@@ -24,9 +25,13 @@ public:
       pros::delay(1);
     }
     imu->set_heading(heading);
-    prev_heading = heading; // make sure odometry isn't messed up
+    this->prev_heading = heading;
     this->heading = heading;
     mutex.give();
+
+    pros::screen::print(pros::E_TEXT_MEDIUM, 0,
+                        "after odom->set_heading(%.2f): %.2f", heading,
+                        this->heading.load());
   }
 
   void set_position(double x, double y) {
@@ -38,6 +43,7 @@ public:
     mutex.give();
   }
 
+  double get_heading() { return heading.load(); }
   Pose get_pose() { return {x.load(), y.load(), heading.load()}; }
   void update();
   void auto_update(double ms_interval); // TODO: implementation
@@ -144,6 +150,7 @@ public:
     CustomImu *imu = nullptr;
   };
   static OdometryBuilder *builder() { return new OdometryBuilder(); }
+
 private:
   Odometry() {}
   bool heading_uses_imu = false;

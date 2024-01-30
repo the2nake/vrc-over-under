@@ -4,7 +4,6 @@
 
 #include "gui.hpp"
 
-#include <chrono>
 #include <iomanip>
 
 namespace config {
@@ -29,8 +28,8 @@ using namespace config;
 void odom_update_handler(void *params) {
   int update_delay = (int)(1000 / aps_update_hz); // in ms
   while (odom != nullptr) {
-    odom->update();
     imu->update_heading();
+    odom->update();
 
     pros::delay(update_delay);
   }
@@ -63,17 +62,23 @@ void initialize() {
 
   program_running = true;
   pros::delay(250);
-  // aps->set_pose({0.0, 0.0, 0.0});
+
+  odom->set_position(0, 0);
 }
 
 void disabled() {}
 
 void competition_initialize() {}
 
+void wait_until_motion_complete(StarDriveController *controller) {
+  while (!controller->is_motion_complete()) {
+    pros::delay(20);
+  }
+}
+
 void autonomous() {
-  /**
-  odom->set_heading(0);
-  odom->set_position(0, 0);
+  // NOTE: 0 heading is straight ahead for the driver
+  //       0, 0 is the center of the field
 
   StarDriveController *drive_controller = StarDriveController::builder()
                                               ->with_drive(chassis)
@@ -81,89 +86,39 @@ void autonomous() {
                                               .build();
   drive_controller->configure_pidf_x(1.0 / 200.0, 0.00000003, 2);
   drive_controller->configure_pidf_y(1.0 / 200.0, 0.00000003, 2);
-  drive_controller->configure_pidf_r(1.0 / 270.0, 0.0000000, 0);
-  drive_controller->configure_stop_threshold(0.04);
-  drive_controller->move_to_pose_pid_async({600, 600, 340});
+  drive_controller->configure_pidf_r(1.0 / 180.0, 0.00000003, 0);
+  drive_controller->configure_stop_threshold(0.03);
 
-  pros::delay(250);
-  motor_intake->move_velocity(10000);
-  pros::delay(500);
-  motor_intake->brake();
+  pros::screen::print(pros::E_TEXT_MEDIUM, 5, "Initial heading: %.2f",
+                      odom->get_pose().heading);
 
-  while (!drive_controller->is_motion_complete()) {
-    pros::delay(20);
+  int selected_auton = 1;
+
+  // TODO: make auton selector
+
+  switch (selected_auton) {
+  case 1:
+
+    // INFO: SAFE-01: This goalside route starts with a triball in the intake
+    odom->set_position(1500, 900);
+    odom->set_heading(270);
+
+    pros::screen::print(pros::E_TEXT_MEDIUM, 6,
+                        "Heading after set_heading: %.2f",
+                        odom->get_pose().heading);
+
+    drive_controller->move_to_pose_pid_async({900, 1500, 270}, 2000);
+    wait_until_motion_complete(drive_controller);
+
+    drive_controller->move_to_pose_pid_async({300, 1500, 270}, 500);
+    pros::delay(160);
+    motor_intake->move_voltage(-12000);
+    wait_until_motion_complete(drive_controller);
+    motor_intake->brake();
+    break;
+  default:
+    break;
   }
-
-  motor_intake->move_velocity(10000);
-  pros::delay(1000);
-  motor_intake->brake();*/
-
-  odom->set_heading(90);
-  odom->set_position(0, 0);
-
-  chassis->drive_relative(0, -0.65, 0, true);
-  pros::delay(1300);
-  chassis->brake();
-
-  chassis->drive_relative(0, 0.6, 0, true);
-  pros::delay(200);
-  chassis->brake();
-
-  chassis->drive_relative(0.7, 0, -0.01, true);
-  pros::delay(1100);
-  chassis->brake();
-
-  chassis->drive_relative(0, -0.6, 0, true);
-  pros::delay(300);
-  chassis->brake();
-
-  chassis->drive_relative(0, 0, 0.6, true);
-  pros::delay(320);
-  chassis->brake();
-
-  piston_wings->set_value(true);
-  pros::delay(500);
-  chassis->drive_relative(0, -1, 0, true);
-  pros::delay(2000);
-  chassis->brake();
-
-  chassis->drive_relative(0, 0.7, 0, true);
-  pros::delay(2000);
-  chassis->brake();
-
-  piston_wings->set_value(false);
-
-  odom->set_heading(180);
-  odom->set_position(0, 0);
-
-  /*  chassis->drive_relative(0, -1, 0, true);
-    pros::delay(2000);
-    chassis->brake();
-
-    odom->set_heading(0);
-    odom->set_position(90, 0);*/
-  /*
-  StarDriveController *drive_controller = StarDriveController::builder()
-                                              ->with_drive(chassis)
-                                              .with_odometry(odom)
-                                              .build();
-  drive_controller->configure_pidf_x(1.0 / 200.0, 0.00000007, 3);
-  drive_controller->configure_pidf_y(1.0 / 200.0, 0.00000007, 3);
-  drive_controller->configure_pidf_r(1.0 / 60.0, 0.00000002, 0);
-  drive_controller->configure_stop_threshold(0.05);
-
-  drive_controller->move_to_pose_pid_async({-50, 0, 270.0});
-  pros::delay(2000);
-
-  chassis->drive_relative(0, -0.4, 0, true);
-  pros::delay(1000);
-  chassis->brake();
-  piston_wings->set_value(true);
-
-  motor_kicker->move_velocity(80);
-  pros::delay(60000);
-  motor_kicker->brake();
-  */
 }
 
 void intake_control(pros::Controller *controller) {
@@ -210,7 +165,7 @@ void opcontrol() {
   std::vector<Point<double>> points = {{2.0, 2.0}};
 
   while (program_running) {
-    auto cycle_start = std::chrono::high_resolution_clock::now();
+    auto cycle_start = pros::millis();
 
     // INPUT
     auto input_lx = controller->get_analog(ANALOG_LEFT_X) / 127.0;
@@ -224,11 +179,10 @@ void opcontrol() {
       chassis->brake();
     } else {
       auto velocities = chassis->drive_field_based(input_rx, input_ry, input_lx,
-                                                   imu->get_heading());
+                                                   odom->get_pose().heading);
     }
 
     if (controller->get_digital_new_press(DIGITAL_A)) {
-      odom->set_heading(0);
       odom->set_heading(0);
     }
 
@@ -248,27 +202,10 @@ void opcontrol() {
     }
     points.push_back({pose.x, pose.y});
 
-    /*
-    auto pose = aps->get_pose();
-    auto readings = aps->get_encoder_readings();
-    pros::screen::print(TEXT_MEDIUM, 0, "(%.2f %.2f), theta: %.2f", pose.x,
-    pose.y, pose.heading); pros::screen::print(TEXT_MEDIUM, 1, "encoders: %d
-    %d", (int)(std::floor(readings.strafe_enc)),
-    (int)(std::floor(readings.left_enc)));
-
-    if (points.size() > 100)
-    {
-        points.erase(points.begin());
-    }
-    points.push_back({pose.x, pose.y});*/
-
     graph->draw();
     graph->plot(points);
 
-    double cycle_time =
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::high_resolution_clock::now() - cycle_start)
-            .count();
+    double cycle_time = pros::millis() - cycle_start;
     pros::delay(std::max(0.0, program_delay_per_cycle - cycle_time));
   }
 }

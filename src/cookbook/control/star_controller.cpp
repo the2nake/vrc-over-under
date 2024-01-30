@@ -34,7 +34,7 @@ void StarDriveController::move_to_pose_pid_async(Pose goal, int ms_timeout) {
 
   pros::Task task{[=] {
     bool settled = false;
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = pros::millis();
 
     while (!(settled || motion_complete.load())) {
       auto pose = odom->get_pose();
@@ -44,23 +44,26 @@ void StarDriveController::move_to_pose_pid_async(Pose goal, int ms_timeout) {
       auto r_out =
           r_pidf->update_error(shorter_turn(pose.heading, goal.heading, 360.0));
 
+      pros::screen::print(pros::E_TEXT_MEDIUM, 2, "x %.2f y %.2f h %.2f",
+                          pose.x, pose.y, pose.heading);
       pros::screen::print(pros::E_TEXT_MEDIUM, 3,
-                          "X_OUT: %.2f, Y_OUT: %.2f, R_OUT: %.2f", x_out, y_out,
+                          "x_out: %.2f, y_out: %.2f, r_out: %.2f", x_out, y_out,
                           r_out);
 
-      chassis->drive_field_based(x_out, y_out, r_out, pose.heading);
       settled = (std::abs(x_out) < stop_threshold) &&
                 (std::abs(y_out) < stop_threshold) &&
                 (std::abs(r_out) < stop_threshold);
-      pros::delay(20);
 
-      auto now = std::chrono::high_resolution_clock::now();
-      int ms_elapsed =
-          std::chrono::duration_cast<std::chrono::milliseconds>(now - start)
-              .count();
+      chassis->drive_field_based(x_out, y_out, r_out, pose.heading);
+
+      auto now = pros::millis();
+      int ms_elapsed = now - start;
       if (ms_elapsed > ms_timeout) {
+        pros::screen::print(pros::E_TEXT_MEDIUM, 4, "pid to %.2f %.2f, heading %.1f timed out", goal.x, goal.y, goal.heading);
         break;
       }
+
+      pros::delay(20);
     }
 
     chassis->brake();

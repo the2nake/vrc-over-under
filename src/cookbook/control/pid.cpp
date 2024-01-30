@@ -38,10 +38,8 @@ double PIDFController::update_error(double err) {
     pros::delay(1);
   }
 
-  auto now = std::chrono::high_resolution_clock::now();
-  int ms_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                       now - last_update.load())
-                       .count();
+  auto now = pros::millis();
+  int ms_elapsed = now - last_update;
 
   double proportional = kp * err;
   double derivative = 0;

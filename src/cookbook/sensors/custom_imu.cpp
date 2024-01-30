@@ -8,5 +8,7 @@ CustomImu::CustomImu(pros::Imu *imu) {
 }
 
 void CustomImu::update_heading() {
-  heading += shorter_turn(heading, base_imu->get_heading(), 360.0) * multiplier;
+  auto curr_base_heading = base_imu->get_heading();
+  heading += mod(shorter_turn(prev_base_heading, curr_base_heading, 360.0) * multiplier, 360.0);
+  prev_base_heading = curr_base_heading;
 }

@@ -11,6 +11,7 @@ Odometry *odom = nullptr;
 void initialise_sensors() {
   // set up imu
   default_imu = new pros::Imu(PORT_IMU);
+  default_imu->set_data_rate(5);
   default_imu->reset();
   while (default_imu->is_calibrating()) {
     pros::delay(40);

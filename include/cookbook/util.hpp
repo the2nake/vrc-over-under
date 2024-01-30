@@ -1,9 +1,7 @@
 /* home.vn2007@gmail.com - 2023 */
 
 #pragma once
-
-#include "main.h"
-
+#include "api.h"
 #include <cmath>
 #include <vector>
 
