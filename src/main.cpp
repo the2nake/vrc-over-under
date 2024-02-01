@@ -23,10 +23,8 @@ pros::controller_digital_e_t lift_toggle;
 pros::controller_digital_e_t wings_toggle;
 }; // namespace config
 
-using namespace config;
-
 void odom_update_handler(void *params) {
-  int update_delay = (int)(1000 / aps_update_hz); // in ms
+  int update_delay = (int)(1000 / config::aps_update_hz); // in ms
   while (odom != nullptr) {
     imu->update_heading();
     odom->update();
@@ -37,6 +35,8 @@ void odom_update_handler(void *params) {
 
 void initialize() {
   // ===== CONFIGURATION =====
+
+  using namespace config;
 
   program_update_hz = 40;
   aps_update_hz = 100;
@@ -70,6 +70,11 @@ void disabled() {}
 
 void competition_initialize() {}
 
+void toggle_wings() {
+  is_wings_out = !is_wings_out;
+  piston_wings->set_value(is_wings_out);
+}
+
 void wait_until_motion_complete(StarDriveController *controller) {
   while (!controller->is_motion_complete()) {
     pros::delay(20);
@@ -77,6 +82,8 @@ void wait_until_motion_complete(StarDriveController *controller) {
 }
 
 void autonomous() {
+  auto start = pros::millis();
+  uint32_t end = 0;
   // NOTE: 0 heading is straight ahead for the driver
   //       0, 0 is the center of the field
 
@@ -84,30 +91,29 @@ void autonomous() {
                                               ->with_drive(chassis)
                                               .with_odometry(odom)
                                               .build();
-  drive_controller->configure_pidf_x(1.0 / 200.0, 0.00000003, 2);
-  drive_controller->configure_pidf_y(1.0 / 200.0, 0.00000003, 2);
-  drive_controller->configure_pidf_r(1.0 / 180.0, 0.00000003, 0);
-  drive_controller->configure_stop_threshold(0.03);
+  drive_controller->configure_pidf_x(1.0 / 100.0, 0.0000004, 8);
+  drive_controller->configure_pidf_y(1.0 / 100.0, 0.0000004, 8);
+  drive_controller->configure_pidf_r(1.0 / 50.00, 0.0000008, 8);
+  drive_controller->configure_stop_threshold(0.06);
 
   pros::screen::print(pros::E_TEXT_MEDIUM, 5, "Initial heading: %.2f",
                       odom->get_pose().heading);
 
-  int selected_auton = 1;
+  int selected_auton = 2;
 
   // TODO: make auton selector
 
   switch (selected_auton) {
   case 1:
-
     // INFO: SAFE-01: This goalside route starts with a triball in the intake
-    odom->set_position(1500, 900);
+    odom->set_position(1500, 790);
     odom->set_heading(270);
 
     pros::screen::print(pros::E_TEXT_MEDIUM, 6,
                         "Heading after set_heading: %.2f",
                         odom->get_pose().heading);
 
-    drive_controller->move_to_pose_pid_async({900, 1500, 270}, 2000);
+    drive_controller->move_to_pose_pid_async({900, 1500, 270}, 1500);
     wait_until_motion_complete(drive_controller);
 
     drive_controller->move_to_pose_pid_async({300, 1500, 270}, 500);
@@ -115,10 +121,118 @@ void autonomous() {
     motor_intake->move_voltage(-12000);
     wait_until_motion_complete(drive_controller);
     motor_intake->brake();
+    end = pros::millis();
+    break;
+  case 2:
+    // INFO: SAFE-02: This goalside route starts with a triball on the wedge
+    odom->set_position(1500, 380);
+    odom->set_heading(180);
+
+    // grab aisle
+
+    drive_controller->move_to_pose_pid_async({1500, 130, 180}, 1000); // grab
+    motor_intake->move_voltage(12000);
+    wait_until_motion_complete(drive_controller);
+
+    pros::delay(200);
+
+    // return
+
+    drive_controller->move_to_pose_pid_async({1500, 900, 180}, 1000);
+    wait_until_motion_complete(drive_controller);
+
+    // descore
+    drive_controller->move_to_pose_pid_async({1280, 1350, 135}, 800);
+    pros::delay(300);
+    motor_intake->move_voltage(4000);
+    toggle_wings();
+    wait_until_motion_complete(drive_controller);
+    pros::delay(200);
+
+    // drive_controller->move_to_pose_pid_async({1160, 1430, 135}, 500);
+    // wait_until_motion_complete(drive_controller);
+
+    toggle_wings();
+
+    pros::delay(250);
+
+    // sweep + push
+
+    drive_controller->move_to_pose_pid_async({950, 1530, 90}, 1000);
+    wait_until_motion_complete(drive_controller);
+
+    drive_controller->move_to_pose_pid_async({0, 1530, 90}, 300);
+    wait_until_motion_complete(drive_controller);
+
+    drive_controller->move_to_pose_pid_async({950, 1500, 90}, 700);
+    wait_until_motion_complete(drive_controller);
+
+    // 180 turn + outtake + push
+
+    drive_controller->move_to_pose_pid_async({950, 1500, 270}, 1000);
+    wait_until_motion_complete(drive_controller);
+
+    drive_controller->move_to_pose_pid_async({0, 1500, 270}, 400);
+
+    pros::delay(100);
+    motor_intake->move_voltage(-12000);
+    pros::delay(100);
+
+    wait_until_motion_complete(drive_controller);
+
+    drive_controller->move_to_pose_pid_async({950, 1500, 270}, 300);
+    wait_until_motion_complete(drive_controller);
+    motor_intake->brake();
+
+    drive_controller->move_to_pose_pid_async({1200, 1200, 206}, 1000);
+    wait_until_motion_complete(drive_controller);
+
+    // grab
+
+    motor_intake->move_voltage(12000);
+    drive_controller->move_to_pose_pid_async({640, 220, 207}, 1700);
+    wait_until_motion_complete(drive_controller);
+    pros::delay(100);
+    motor_intake->move_voltage(4000);
+
+
+    drive_controller->move_to_pose_pid_async({215, 300, 180}, 700);
+    wait_until_motion_complete(drive_controller);
+    toggle_wings();
+    pros::delay(250);
+
+    // wing push
+
+    drive_controller->move_to_pose_pid_async({215, 1500, 180}, 1000);
+    wait_until_motion_complete(drive_controller);
+
+    toggle_wings();
+
+    // back out
+
+    drive_controller->move_to_pose_pid_async({100, 600, 0}, 700);
+    wait_until_motion_complete(drive_controller);
+
+    // intake side rotate + push
+
+    drive_controller->move_to_pose_pid_async({215, 1500, 0}, 700);
+    pros::delay(100);
+    motor_intake->move_voltage(-12000);
+    wait_until_motion_complete(drive_controller);
+
+    drive_controller->move_to_pose_pid_async({215, 600, 0}, 500);
+    wait_until_motion_complete(drive_controller);
+    motor_intake->brake();
+
+
+    end = pros::millis();
+
     break;
   default:
     break;
   }
+
+  pros::screen::print(pros::E_TEXT_MEDIUM, 9, "Auton stop time (ms): %d", end - start);
 }
 
 void intake_control(pros::Controller *controller) {
@@ -141,8 +255,7 @@ void kicker_control(pros::Controller *controller) {
 
 void wings_control(pros::Controller *controller) {
   if (controller->get_digital_new_press(config::wings_toggle)) {
-    is_wings_out = !is_wings_out;
-    piston_wings->set_value(is_wings_out);
+    toggle_wings();
   }
 }
 
@@ -164,7 +277,7 @@ void opcontrol() {
   graph->point_width = 3;
   std::vector<Point<double>> points = {{2.0, 2.0}};
 
-  while (program_running) {
+  while (config::program_running) {
     auto cycle_start = pros::millis();
 
     // INPUT
@@ -173,9 +286,9 @@ void opcontrol() {
     auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
 
     // OUTPUT
-    if (std::abs(input_lx) < joystick_threshold &&
-        std::abs(input_rx) < joystick_threshold &&
-        std::abs(input_ry) < joystick_threshold) {
+    if (std::abs(input_lx) < config::joystick_threshold &&
+        std::abs(input_rx) < config::joystick_threshold &&
+        std::abs(input_ry) < config::joystick_threshold) {
       chassis->brake();
     } else {
       auto velocities = chassis->drive_field_based(input_rx, input_ry, input_lx,
@@ -206,6 +319,6 @@ void opcontrol() {
     graph->plot(points);
 
     double cycle_time = pros::millis() - cycle_start;
-    pros::delay(std::max(0.0, program_delay_per_cycle - cycle_time));
+    pros::delay(std::max(0.0, config::program_delay_per_cycle - cycle_time));
   }
 }
