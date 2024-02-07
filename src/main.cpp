@@ -99,7 +99,7 @@ void autonomous() {
   pros::screen::print(pros::E_TEXT_MEDIUM, 5, "Initial heading: %.2f",
                       odom->get_pose().heading);
 
-  int selected_auton = 2;
+  int selected_auton = 3;
 
   // TODO: make auton selector
 
@@ -121,7 +121,6 @@ void autonomous() {
     motor_intake->move_voltage(-12000);
     wait_until_motion_complete(drive_controller);
     motor_intake->brake();
-    end = pros::millis();
     break;
   case 2:
     // INFO: SAFE-02: This goalside route starts with a triball on the wedge
@@ -195,7 +194,6 @@ void autonomous() {
     pros::delay(100);
     motor_intake->move_voltage(4000);
 
-
     drive_controller->move_to_pose_pid_async({215, 300, 180}, 700);
     wait_until_motion_complete(drive_controller);
     toggle_wings();
@@ -223,16 +221,81 @@ void autonomous() {
     drive_controller->move_to_pose_pid_async({215, 600, 0}, 500);
     wait_until_motion_complete(drive_controller);
     motor_intake->brake();
-
-
-    end = pros::millis();
-
     break;
+  case 3:
+    // INFO: DEF-AWP-SAFE-01: This load side route starts with a triball in the
+    // intake
+    odom->set_position(-1500, 400);
+    odom->set_heading(180);
+    motor_intake->move_voltage(4000);
+
+    // push aisle
+    drive_controller->move_to_pose_pid_async({-1500, 200, 180}, 300);
+    wait_until_motion_complete(drive_controller);
+
+    // go next to goal
+    drive_controller->move_to_pose_pid_async({-1500, 900, 180}, 800);
+    wait_until_motion_complete(drive_controller);
+    drive_controller->move_to_pose_pid_async({-900, 1500, 90}, 1000);
+    wait_until_motion_complete(drive_controller);
+
+    // outtake and turn + push
+    motor_intake->move_voltage(-12000);
+    drive_controller->move_to_pose_pid_async({-1000, 1500, 0}, 500);
+    wait_until_motion_complete(drive_controller);
+    drive_controller->move_to_pose_pid_async({0, 1500, 0}, 500);
+    wait_until_motion_complete(drive_controller);
+    motor_intake->brake();
+
+    // align next to matchload + spin
+    drive_controller->move_to_pose_pid_async({-1300, 1350, 90}, 700);
+    pros::delay(300);
+    toggle_wings();
+    pros::delay(250);
+    wait_until_motion_complete(drive_controller);
+
+    drive_controller->move_to_pose_pid_async({-1300, 1350, 315}, 500);
+    wait_until_motion_complete(drive_controller);
+    toggle_wings();
+
+    // go to bar and touch
+
+    drive_controller->move_to_pose_pid_async({-900, 900, 0}, 800);
+    wait_until_motion_complete(drive_controller);
+    drive_controller->move_to_pose_pid_async({-950, 200, 0}, 1000);
+    wait_until_motion_complete(drive_controller);
+    toggle_wings();
+    pros::delay(200);
+
+    drive_controller->move_to_pose_pid_async({-977, 258, 330}, 500);
+    wait_until_motion_complete(drive_controller);
+
+    /**
+     * -600, 600, 0
+     * outtake
+     * -600, 600, 270
+     * -600, 0, 270
+     * -600, 600, 270
+     * -430, 225, 315
+     * wings down
+     * -430, 225, 225
+     * wings up
+     * 0, 0, 270
+     * 750, 0, 270 // go to hall
+     * 0, 0, 270
+     * 0, 600, 270
+     * 600, 600, 270
+     * wings down
+     * 650, 550, turn left
+     */
+
   default:
     break;
   }
 
-  pros::screen::print(pros::E_TEXT_MEDIUM, 9, "Auton stop time (ms): %d", end - start);
+  end = pros::millis();
+  pros::screen::print(pros::E_TEXT_MEDIUM, 9, "Auton stop time (ms): %d",
+                      end - start);
 }
 
 void intake_control(pros::Controller *controller) {
