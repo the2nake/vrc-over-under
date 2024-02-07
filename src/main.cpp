@@ -225,49 +225,49 @@ void autonomous() {
   case 3:
     // INFO: DEF-AWP-SAFE-01: This load side route starts with a triball in the
     // intake
-    odom->set_position(-1500, 400);
+    odom->set_position(1500, -400);
     odom->set_heading(0);
     motor_intake->move_voltage(4000);
 
     // push aisle
-    drive_controller->move_to_pose_pid_async({-1500, 200, 0}, 300);
+    drive_controller->move_to_pose_pid_async({1500, -200, 0}, 300);
     wait_until_motion_complete(drive_controller);
 
     // go next to goal
-    drive_controller->move_to_pose_pid_async({-1500, 900, 0}, 800);
+    drive_controller->move_to_pose_pid_async({1500, -900, 0}, 800);
     wait_until_motion_complete(drive_controller);
-    drive_controller->move_to_pose_pid_async({-900, 1500, 270}, 1000);
+    drive_controller->move_to_pose_pid_async({800, -1600, 270}, 1200);
     wait_until_motion_complete(drive_controller);
 
     // outtake and turn + push
     motor_intake->move_voltage(-12000);
-    drive_controller->move_to_pose_pid_async({-1000, 1500, 180}, 500);
+    drive_controller->move_to_pose_pid_async({1000, -1600, 180}, 500);
     wait_until_motion_complete(drive_controller);
-    drive_controller->move_to_pose_pid_async({0, 1500, 180}, 500);
+    drive_controller->move_to_pose_pid_async({0, -1600, 180}, 500);
     wait_until_motion_complete(drive_controller);
     motor_intake->brake();
 
     // align next to matchload + spin
-    drive_controller->move_to_pose_pid_async({-1300, 1350, 270}, 700);
+    drive_controller->move_to_pose_pid_async({1320, -1350, 270}, 700);
     pros::delay(300);
     toggle_wings();
     pros::delay(250);
     wait_until_motion_complete(drive_controller);
 
-    drive_controller->move_to_pose_pid_async({-1300, 1350, 135}, 500);
+    drive_controller->move_to_pose_pid_async({1320, -1350, 135}, 500);
     wait_until_motion_complete(drive_controller);
     toggle_wings();
 
     // go to bar and touch
 
-    drive_controller->move_to_pose_pid_async({-900, 900, 180}, 800);
+    drive_controller->move_to_pose_pid_async({900, -900, 180}, 800);
     wait_until_motion_complete(drive_controller);
-    drive_controller->move_to_pose_pid_async({-950, 200, 180}, 1000);
+    drive_controller->move_to_pose_pid_async({950, -200, 180}, 1000);
     wait_until_motion_complete(drive_controller);
     toggle_wings();
     pros::delay(200);
 
-    drive_controller->move_to_pose_pid_async({-977, 258, 210}, 500);
+    drive_controller->move_to_pose_pid_async({977, -258, 150}, 500);
     wait_until_motion_complete(drive_controller);
 
     /**
