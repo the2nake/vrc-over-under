@@ -42,6 +42,8 @@
 //#include "okapi/api.hpp"
 //#include "pros/api_legacy.h"
 
+#include "display/lvgl.h"
+
 #include "cookbook/api.hpp"
 #include "salsa/api.hpp"
 

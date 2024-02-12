@@ -5,6 +5,12 @@
 #include "gui.hpp"
 
 #include <iomanip>
+#include <map>
+#include <vector>
+
+struct AutonInfo {
+  int id = 0;
+};
 
 namespace config {
 bool program_running;
@@ -15,13 +21,29 @@ double program_delay_per_cycle;
 
 int aps_update_hz;
 
+bool run_auton_before_teleop;
+bool init_complete;
+int selected_auton;
+
+// button to auton id map here
+std::vector<lv_obj_t *> auton_btns;
+std::map<lv_obj_t *, AutonInfo> btn_to_info_map;
+
 pros::controller_digital_e_t intake_in;
 pros::controller_digital_e_t intake_out;
 
 pros::controller_digital_e_t kicker_shoot;
 pros::controller_digital_e_t lift_toggle;
 pros::controller_digital_e_t wings_toggle;
+
 }; // namespace config
+
+void lv_tick_loop(void *) {
+  while (true) {
+    lv_tick_inc(3);
+    pros::delay(3);
+  }
+}
 
 void odom_update_handler(void *params) {
   int update_delay = (int)(1000 / config::aps_update_hz); // in ms
@@ -33,7 +55,166 @@ void odom_update_handler(void *params) {
   }
 }
 
+lv_res_t switch_callback(lv_obj_t *sw) {
+  config::run_auton_before_teleop = lv_sw_get_state(sw);
+  return LV_RES_OK;
+}
+
+lv_res_t confirm_callback(lv_obj_t *btn) {
+  config::init_complete = true;
+  return LV_RES_OK;
+}
+
+lv_res_t btn_select_callback(lv_obj_t *selected_btn) {
+  if (config::btn_to_info_map.count(selected_btn)) {
+    auto data = config::btn_to_info_map.at(selected_btn);
+    config::selected_auton = data.id;
+
+    for (auto btn : config::auton_btns) {
+      lv_btn_set_state(btn, LV_BTN_STATE_REL);
+    }
+    lv_btn_set_state(selected_btn, LV_BTN_STATE_TGL_REL);
+  }
+  return LV_RES_OK;
+}
+
+lv_obj_t* new_auton_btn(lv_obj_t* auton_panel, lv_obj_t *prev_btn, AutonInfo data, const char *desc, int w,
+                   int h, int margin) {
+  lv_obj_t *new_btn = lv_btn_create(auton_panel, nullptr);
+  lv_btn_set_toggle(new_btn, true);
+  config::btn_to_info_map.insert(
+      std::pair<lv_obj_t *, AutonInfo>(new_btn, data));
+  config::auton_btns.push_back(new_btn);
+  lv_obj_t *new_btn_label = lv_label_create(new_btn, nullptr);
+  lv_label_set_text(new_btn_label, desc);
+  lv_obj_align(new_btn_label, nullptr, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_size(new_btn, w, h);
+  lv_obj_align(new_btn, prev_btn, LV_ALIGN_OUT_BOTTOM_MID, 0, margin);
+  lv_btn_set_action(new_btn, LV_BTN_ACTION_CLICK, btn_select_callback);
+  return new_btn;
+}
+
+void auton_selector() {
+
+  int command_margin = 4;  // px
+  int command_height = 32; // px
+  int sw_width = command_height * 2;
+  int menu_margin = 4; // px
+  int menu_width = 240 - 2 * menu_margin;
+  int btn_margin = 4; // px
+  int auton_btn_w = (int)std::floor(menu_width * 3.0 / 4.0);
+  int auton_btn_h = 48;
+
+  // takes up the right half of the screen
+  // margins 4px
+  // 232 px square
+
+  // scrolling should occur automatically
+  /*Create a scroll bar style*/
+  static lv_style_t style_sb;
+  lv_style_copy(&style_sb, &lv_style_plain);
+  style_sb.body.main_color = LV_COLOR_BLACK;
+  style_sb.body.grad_color = LV_COLOR_BLACK;
+  style_sb.body.border.color = LV_COLOR_WHITE;
+  style_sb.body.border.width = 1;
+  style_sb.body.border.opa = LV_OPA_70;
+  style_sb.body.radius = LV_RADIUS_CIRCLE;
+  style_sb.body.opa = LV_OPA_60;
+  style_sb.body.padding.hor = 3;   /*Horizontal padding on the right*/
+  style_sb.body.padding.inner = 8; /*Scrollbar width*/
+
+  lv_style_btn_ina.body.radius = 4;
+  lv_style_btn_tgl_pr.body.radius = 4;
+  lv_style_btn_tgl_rel.body.radius = 4;
+  lv_style_btn_pr.body.radius = 4;
+  lv_style_btn_rel.body.radius = 4;
+
+  lv_obj_t *auton_panel = lv_page_create(lv_scr_act(), nullptr);
+  lv_obj_set_size(auton_panel, menu_width,
+                  240 - 2 * menu_margin - command_margin - command_height);
+  lv_obj_align(auton_panel, nullptr, LV_ALIGN_IN_TOP_RIGHT, -menu_margin,
+               menu_margin);
+  lv_page_set_style(auton_panel, LV_PAGE_STYLE_SB, &style_sb);
+  lv_page_set_sb_mode(auton_panel, LV_SB_MODE_AUTO);
+
+  lv_obj_t *run_before_teleop_switch = lv_sw_create(lv_scr_act(), nullptr);
+  lv_sw_off(run_before_teleop_switch);
+  lv_obj_set_size(run_before_teleop_switch, sw_width, command_height);
+  lv_obj_align(run_before_teleop_switch, nullptr, LV_ALIGN_IN_BOTTOM_LEFT,
+               240 + menu_margin, -command_margin);
+  lv_sw_set_action(run_before_teleop_switch, switch_callback);
+
+  lv_obj_t *sw_label = lv_label_create(lv_scr_act(), nullptr);
+  lv_label_set_text(sw_label, "Run auto?");
+  lv_obj_set_width(sw_label, command_height * 2);
+  lv_obj_set_height(sw_label, command_height);
+  lv_obj_align(sw_label, run_before_teleop_switch, LV_ALIGN_OUT_RIGHT_MID,
+               command_margin * 2, 0);
+
+  lv_obj_t *execute_btn = lv_btn_create(lv_scr_act(), nullptr);
+  lv_btn_set_action(execute_btn, LV_BTN_ACTION_CLICK, confirm_callback);
+  lv_obj_t *execute_btn_label = lv_label_create(execute_btn, nullptr);
+  lv_label_set_text(execute_btn_label, "Confirm");
+  lv_obj_align(execute_btn_label, nullptr, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_size(execute_btn,
+                  240 - 2 * menu_margin - 4 * command_margin -
+                      lv_obj_get_width(sw_label) -
+                      lv_obj_get_width(run_before_teleop_switch),
+                  command_height);
+  lv_obj_align(execute_btn, sw_label, LV_ALIGN_OUT_RIGHT_MID,
+               2 * command_margin, 0);
+
+  // MENU BUTTONS + DESCRIPTIONS HERE
+
+  // No Auton Button
+
+  lv_obj_t *auton_btn0 = lv_btn_create(auton_panel, nullptr);
+  lv_btn_set_toggle(auton_btn0, true);
+  lv_btn_set_state(auton_btn0, LV_BTN_STATE_TGL_REL);
+  config::btn_to_info_map.insert(
+      std::pair<lv_obj_t *, AutonInfo>(auton_btn0, {0}));
+  config::auton_btns.push_back(auton_btn0);
+  lv_obj_t *auton_btn0_label = lv_label_create(auton_btn0, nullptr);
+  lv_label_set_text(auton_btn0_label, "do nothing");
+  lv_obj_align(auton_btn0_label, nullptr, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_size(auton_btn0, auton_btn_w, auton_btn_h);
+  lv_obj_align(auton_btn0, nullptr, LV_ALIGN_IN_TOP_LEFT, 0, btn_margin);
+  lv_btn_set_action(auton_btn0, LV_BTN_ACTION_CLICK, btn_select_callback);
+
+  // Simple AWP Offensive
+
+  auto auton_btn1 = new_auton_btn(auton_panel, auton_btn0, {1}, "awp-o simple", auton_btn_w, auton_btn_h, btn_margin);
+
+  // 5 Ball AWP Offensive
+
+  auto auton_btn2 = new_auton_btn(auton_panel, auton_btn1, {2}, "awp-o 5ball", auton_btn_w, auton_btn_h, btn_margin);
+
+  // AWP Safe Defensive
+
+  auto auton_btn3 = new_auton_btn(auton_panel, auton_btn2, {3}, "awp-d saffe", auton_btn_w, auton_btn_h, btn_margin);
+
+  while (!config::init_complete) {
+    pros::delay(20);
+  }
+
+  /*
+    // once confirm is hit, delete everything
+    lv_obj_clean(auton_panel);
+    lv_obj_clean(run_before_teleop_switch);
+    lv_obj_clean(sw_label);
+    lv_obj_clean(execute_btn);
+    */
+}
+
 void initialize() {
+  config::init_complete = false;
+
+  // LVGL styles
+  lv_style_init();
+
+  pros::Task lvgl_tick{lv_tick_loop};
+  lv_init();
+
   // ===== CONFIGURATION =====
 
   using namespace config;
@@ -48,6 +229,8 @@ void initialize() {
   kicker_shoot = pros::E_CONTROLLER_DIGITAL_L2;
   wings_toggle = pros::E_CONTROLLER_DIGITAL_L1;
   lift_toggle = pros::E_CONTROLLER_DIGITAL_UP;
+
+  selected_auton = 0;
 
   //  ===== END CONFIG =====
 
@@ -64,6 +247,8 @@ void initialize() {
   pros::delay(250);
 
   odom->set_position(0, 0);
+
+  auton_selector();
 }
 
 void disabled() {}
@@ -96,22 +281,11 @@ void autonomous() {
   drive_controller->configure_pidf_r(1.0 / 50.00, 0.0000008, 8);
   drive_controller->configure_stop_threshold(0.06);
 
-  pros::screen::print(pros::E_TEXT_MEDIUM, 5, "Initial heading: %.2f",
-                      odom->get_pose().heading);
-
-  int selected_auton = 3;
-
-  // TODO: make auton selector
-
-  switch (selected_auton) {
+  switch (config::selected_auton) {
   case 1:
     // INFO: SAFE-01: This goalside route starts with a triball in the intake
     odom->set_position(1500, 790);
     odom->set_heading(270);
-
-    pros::screen::print(pros::E_TEXT_MEDIUM, 6,
-                        "Heading after set_heading: %.2f",
-                        odom->get_pose().heading);
 
     drive_controller->move_to_pose_pid_async({900, 1500, 270}, 1500);
     wait_until_motion_complete(drive_controller);
@@ -121,6 +295,11 @@ void autonomous() {
     motor_intake->move_voltage(-12000);
     wait_until_motion_complete(drive_controller);
     motor_intake->brake();
+
+    drive_controller->move_to_pose_pid_async({900, 1500, 90}, 1200);
+    wait_until_motion_complete(drive_controller);
+    drive_controller->move_to_pose_pid_async({300, 1500, 90}, 500);
+    wait_until_motion_complete(drive_controller);
     break;
   case 2:
     // INFO: SAFE-02: This goalside route starts with a triball on the wedge
@@ -270,26 +449,8 @@ void autonomous() {
     drive_controller->move_to_pose_pid_async({977, -258, 150}, 500);
     wait_until_motion_complete(drive_controller);
 
-    /**
-     * -600, 600, 0
-     * outtake
-     * -600, 600, 270
-     * -600, 0, 270
-     * -600, 600, 270
-     * -430, 225, 315
-     * wings down
-     * -430, 225, 225
-     * wings up
-     * 0, 0, 270
-     * 750, 0, 270 // go to hall
-     * 0, 0, 270
-     * 0, 600, 270
-     * 600, 600, 270
-     * wings down
-     * 650, 550, turn left
-     */
-
   default:
+    odom->set_heading(270);
     break;
   }
 
@@ -330,6 +491,10 @@ void lift_control(pros::Controller *controller) {
 }
 
 void opcontrol() {
+  if (config::run_auton_before_teleop) {
+    autonomous();
+  }
+
   pros::Controller *controller =
       new pros::Controller(pros::E_CONTROLLER_MASTER);
 
