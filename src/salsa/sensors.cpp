@@ -8,6 +8,8 @@ pros::ADIEncoder *x_enc = nullptr;
 pros::ADIEncoder *y_enc = nullptr;
 Odometry *odom = nullptr;
 
+bool sensor_update_paused = false;
+
 void initialise_sensors() {
   // set up imu
   default_imu = new pros::Imu(PORT_IMU);

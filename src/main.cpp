@@ -41,16 +41,18 @@ pros::controller_digital_e_t wings_toggle;
 
 void lv_tick_loop(void *) {
   while (true) {
-    lv_tick_inc(3);
-    pros::delay(3);
+    lv_tick_inc(5);
+    pros::delay(5);
   }
 }
 
 void odom_update_handler(void *params) {
   int update_delay = (int)(1000 / config::aps_update_hz); // in ms
   while (odom != nullptr) {
-    imu->update_heading();
-    odom->update();
+    if (!sensor_update_paused) {
+      imu->update_heading();
+      odom->update();
+    }
 
     pros::delay(update_delay);
   }
@@ -195,7 +197,10 @@ void auton_selector() {
 
   // AWP Safe Defensive
 
-  auto auton_btn3 = new_auton_btn(auton_panel, auton_btn2, {3}, "awp-d saffe",
+  auto auton_btn3 = new_auton_btn(auton_panel, auton_btn2, {3}, "awp-d safe",
+                                  auton_btn_w, auton_btn_h, btn_margin);
+
+  auto auton_btn4 = new_auton_btn(auton_panel, auton_btn3, {4}, "auton skills",
                                   auton_btn_w, auton_btn_h, btn_margin);
 
   while (!config::init_complete) {
@@ -277,7 +282,7 @@ void autonomous() {
 
   switch (config::selected_auton) {
   case 1:
-  // INFO: SAFE-01: This goalside route starts with a triball in the intake
+    // INFO: SAFE-01: This goalside route starts with a triball in the intake
     auton_awp_o_safe(drive_controller, odom);
     break;
   case 2:
@@ -288,6 +293,10 @@ void autonomous() {
     // INFO: DEF-AWP-SAFE-01: This load side route starts with a triball in the
     // intake
     auton_awp_d_safe(drive_controller, odom);
+    break;
+  case 4:
+    auton_skills(drive_controller, odom);
+    break;
   default:
     odom->set_heading(270);
     break;

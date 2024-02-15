@@ -11,3 +11,5 @@ void auton_awp_o_safe(StarDriveController* drive_controller, Odometry* odom);
 void auton_awp_o_5_ball(StarDriveController* drive_controller, Odometry* odom);
 
 void auton_awp_d_safe(StarDriveController* drive_controller, Odometry* odom);
+
+void auton_skills(StarDriveController* drive_controller, Odometry* odom);

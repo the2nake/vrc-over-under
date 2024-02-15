@@ -11,4 +11,6 @@ extern pros::ADIEncoder* x_enc;
 extern pros::ADIEncoder* y_enc;
 extern Odometry *odom;
 
+extern bool sensor_update_paused;
+
 void initialise_sensors();
