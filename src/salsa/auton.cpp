@@ -4,6 +4,8 @@
 #include "salsa/devices.hpp"
 #include "salsa/sensors.hpp"
 
+bool testing = false;
+
 void wait_until_motion_complete(StarDriveController *controller) {
   while (!controller->is_motion_complete()) {
     pros::delay(20);
@@ -182,10 +184,6 @@ void auton_awp_d_safe(StarDriveController *drive_controller, Odometry *odom) {
 }
 
 void auton_skills(StarDriveController *drive_controller, Odometry *odom) {
-  bool testing = true;
-
-  odom->set_position(1525, -1171);
-  odom->set_heading(45);
 
   // STAGE 1: push and matchload
 
@@ -202,27 +200,21 @@ void auton_skills(StarDriveController *drive_controller, Odometry *odom) {
   if (!testing) {
     auto deg0 = motor_kicker->get_position();
     motor_kicker->move_voltage(12000);
-    while (std::abs(motor_kicker->get_position() - deg0) < 44 * 360) {
+    while (std::abs(motor_kicker->get_position() - deg0) < 44.5 * 360) {
       pros::delay(30);
     } // shoot 44 times
     motor_kicker->brake();
   }
   sensor_update_paused = false;
-  odom->set_heading(333);
   odom->set_position(1322, -1317);
+  odom->set_heading(333);
 
   // STAGE 2: sweep balls on non scored side
 
-  drive_controller->move_to_pose_pid_async({1000, -900, 180}, 1500);
+  drive_controller->move_to_pose_pid_async({1000, -900, 180}, 1200);
   wait_until_motion_complete(drive_controller);
 
-  drive_controller->configure_stop_threshold(0.2);
-  drive_controller->move_to_pose_pid_async({1070, -280, 180}, 1000);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->configure_stop_threshold(0.06);
-
-  drive_controller->move_to_pose_pid_async({1080, -220, 175}, 500);
+  drive_controller->move_to_pose_pid_async({1080, -220, 175}, 600);
   wait_until_motion_complete(drive_controller);
 
   drive_controller->move_to_pose_pid_async({740, -421, 120}, 1000);
@@ -235,14 +227,14 @@ void auton_skills(StarDriveController *drive_controller, Odometry *odom) {
   drive_controller->move_to_pose_pid_async({-800, -421, 180}, 500);
   wait_until_motion_complete(drive_controller);
 
-  odom->set_position(-1000, -400);
-
   drive_controller->move_to_pose_pid_async({-1000, -600, 180}, 500);
   wait_until_motion_complete(drive_controller);
-  chassis->drive_relative(0, 1, 0, true);
-  pros::delay(300);
+  chassis->drive_relative(0, 0.5, 0, true);
+  pros::delay(400);
+  chassis->brake();
+  pros::delay(50);
   chassis->drive_relative(0, -1, 0, true);
-  pros::delay(800);
+  pros::delay(1000);
   chassis->brake();
   toggle_wings();
 
@@ -256,68 +248,419 @@ void auton_skills(StarDriveController *drive_controller, Odometry *odom) {
   drive_controller->move_to_pose_pid_async({-1500, -950, 180}, 1000);
   wait_until_motion_complete(drive_controller);
 
+  odom->set_position(-1570, odom->get_pose().y);
+
+  // start going through
+
   drive_controller->move_to_pose_pid_async({-1500, -950, 180}, 400);
   wait_until_motion_complete(drive_controller);
 
   drive_controller->move_to_pose_pid_async({-1500, 1000, 180}, 2000);
   wait_until_motion_complete(drive_controller);
 
-  drive_controller->move_to_pose_pid_async({-1500, 1000, 225}, 500);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-1550, 1280, 227}, 500);
-  wait_until_motion_complete(drive_controller);
-  toggle_wings();
+  drive_controller->move_to_pose_pid_async({-1200, 1200, 270}, 700);
   pros::delay(300);
-
-  drive_controller->move_to_pose_pid_async({-1270, 1450, 270}, 500);
-  wait_until_motion_complete(drive_controller);
   toggle_wings();
-
-  // double hard push into side
-
-  chassis->drive_relative(0, -1, 0, true);
-  pros::delay(600);
-
-  drive_controller->move_to_pose_pid_async({-1270, 1550, 270}, 700);
   wait_until_motion_complete(drive_controller);
 
   // sweep towards middle
 
-  drive_controller->move_to_pose_pid_async({-1102, 1150, 315}, 2000);
+  drive_controller->move_to_pose_pid_async({-900, 900, 315}, 500);
   wait_until_motion_complete(drive_controller);
-  toggle_wings();
 
-  drive_controller->move_to_pose_pid_async({-1002, 390, 290}, 800);
+  drive_controller->move_to_pose_pid_async({-900, 600, 270}, 1000);
   wait_until_motion_complete(drive_controller);
-  drive_controller->move_to_pose_pid_async({-700, 330, 200}, 1500);
+
+  drive_controller->move_to_pose_pid_async({-400, 350, 200}, 2000);
   wait_until_motion_complete(drive_controller);
 
   chassis->drive_relative(0, -1, 0, true);
   pros::delay(1200);
   chassis->brake();
+
+  toggle_wings();
+  pros::delay(250);
 
   // reposition
 
-  drive_controller->move_to_pose_pid_async({-700, 330, 300}, 1200);
+  drive_controller->move_to_pose_pid_async({-600, 350, 270}, 800);
+  wait_until_motion_complete(drive_controller);
+  toggle_wings();
+
+  drive_controller->move_to_pose_pid_async({500, 350, 270}, 1000);
   wait_until_motion_complete(drive_controller);
 
-  drive_controller->move_to_pose_pid_async({300, 330, 180}, 1300);
+  drive_controller->move_to_pose_pid_async({600, 350, 150}, 1000);
   wait_until_motion_complete(drive_controller);
-
-  odom->set_position(200, 330);
 
   chassis->drive_relative(0, -1, 0, true);
   pros::delay(1200);
   chassis->brake();
 
-  drive_controller->move_to_pose_pid_async({300, 330, 200}, 1500);
+  toggle_wings();
+  pros::delay(250);
+
+  drive_controller->move_to_pose_pid_async({300, 350, 270}, 1200);
+  wait_until_motion_complete(drive_controller);
+  toggle_wings();
+
+  drive_controller->move_to_pose_pid_async({900, 350, 225}, 1200);
   wait_until_motion_complete(drive_controller);
 
-  drive_controller->move_to_pose_pid_async({900, 330, 160}, 1500);
+  drive_controller->move_to_pose_pid_async({0, 300, 180}, 800);
   wait_until_motion_complete(drive_controller);
 
   chassis->drive_relative(0, -1, 0, true);
   pros::delay(1000);
   chassis->brake();
 }
+
+void auton_skills_2(StarDriveController *drive_controller, Odometry *odom) {
+  odom->set_position(1525, -1171);
+  odom->set_heading(45);
+
+  // STAGE 1: push + matchload
+
+  drive_controller->move_to_pose_pid_async({1073, -1500, 90}, 700);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({0, -1550, 90}, 500);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({1322, -1317, 333}, 1200);
+  wait_until_motion_complete(drive_controller);
+
+  sensor_update_paused = true;
+  if (!testing) {
+    auto deg0 = motor_kicker->get_position();
+    motor_kicker->move_voltage(12000);
+    // motor_kicker->move_velocity(50);
+    while (std::abs(motor_kicker->get_position() - deg0) < 44.5 * 360) {
+      pros::delay(30);
+    } // shoot 44 times
+    motor_kicker->brake();
+  }
+  sensor_update_paused = false;
+  odom->set_position(1322, -1317);
+  odom->set_heading(333);
+
+  // STAGE 2: sweep into corner and push into hallway
+
+  drive_controller->move_to_pose_pid_async({900, -900, 180}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({740, -421, 120}, 800);
+  toggle_wings();
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-740, -421, 120}, 1400);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-100, -300, 90}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1500, -300, 90}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  // STAGE 3: sweep into the back of the hallway
+  toggle_wings();
+  pros::delay(100);
+  drive_controller->move_to_pose_pid_async({-800, -900, 45}, 600);
+  pros::delay(150);
+  toggle_wings();
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1150, -1150, 90}, 600);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1250, -750, 180}, 600);
+  wait_until_motion_complete(drive_controller);
+
+  // retract wings
+
+  toggle_wings();
+  pros::delay(250);
+  drive_controller->move_to_pose_pid_async({-1530, -1000, 180}, 400);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1530, -800, 170}, 600);
+  wait_until_motion_complete(drive_controller);
+
+  // STAGE 4: sweep through hallway into goal
+
+  drive_controller->move_to_pose_pid_async({-1520, 1050, 200}, 1400);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1410, 1240, 225}, 400);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1250, 1600, 225}, 400);
+  wait_until_motion_complete(drive_controller);
+
+  // shift the stack a little
+
+  drive_controller->move_to_pose_pid_async({-1000, 1650, 270}, 100);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-900, 1650, 270}, 200);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async(
+      {-1050, 1650, 270}, 800); // avoid the goal cone at all costs !
+  wait_until_motion_complete(drive_controller);
+
+  // push into side of goal
+
+  drive_controller->move_to_pose_pid_async({0, 1660, 270}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  /*
+  drive_controller->move_to_pose_pid_async(
+      {-1050, 1700, 270}, 1000); // avoid the goal cone at all costs !
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({0, 1700, 270}, 1000);
+  wait_until_motion_complete(drive_controller);
+  */
+
+  // STAGE 5: funnel towards center
+
+  drive_controller->move_to_pose_pid_async({-900, 1200, 315}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  toggle_wings();
+  drive_controller->move_to_pose_pid_async(
+      {-1100, 1000, 300}, 500); // avoid touching the goal post with wings !
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-900, 600, 300}, 500);
+  wait_until_motion_complete(drive_controller);
+  drive_controller->move_to_pose_pid_async({-900, 450, 300}, 250);
+  wait_until_motion_complete(drive_controller);
+  drive_controller->move_to_pose_pid_async({-900, 300, 270}, 500);
+  wait_until_motion_complete(drive_controller);
+  drive_controller->move_to_pose_pid_async({-500, 300, 225}, 300);
+  wait_until_motion_complete(drive_controller);
+
+  // STAGE 6: double push on the left centre side of the goal with wings
+
+  drive_controller->move_to_pose_pid_async({-500, 310, 210}, 300);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({0, 1800, 210}, 1200);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-500, 300, 210}, 800);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-300, 300, 210}, 400);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({0, 1800, 210}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  // STAGE 7: the push of faith
+
+  drive_controller->move_to_pose_pid_async({-300, 200, 90}, 900);
+  pros::delay(300);
+  toggle_wings();
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({800, 200, 90}, 1500);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({800, 250, 140}, 500);
+  wait_until_motion_complete(drive_controller);
+
+  toggle_wings();
+  pros::delay(200);
+  chassis->drive_relative(0, -1, 0, true);
+  pros::delay(1200);
+  chassis->brake();
+
+  // STAGE 8: clean up with odom
+
+  drive_controller->move_to_pose_pid_async({0, 800, 180}, 400);
+  toggle_wings();
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({0, 300, 180}, 800);
+  wait_until_motion_complete(drive_controller);
+
+  toggle_wings();
+  pros::delay(250);
+
+  drive_controller->move_to_pose_pid_async({-100, 300, 180}, 600);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-100, 1800, 180}, 1000);
+  wait_until_motion_complete(drive_controller);
+}
+
+void auton_driver(StarDriveController* drive_controller, Odometry* odom) {
+  odom->set_position(1525, -1171);
+  odom->set_heading(45);
+
+  // STAGE 1: push + matchload
+
+  drive_controller->move_to_pose_pid_async({1073, -1500, 90}, 700);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({0, -1550, 90}, 500);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({1322, -1317, 333}, 1200);
+  wait_until_motion_complete(drive_controller);
+
+  sensor_update_paused = true;
+  if (!testing) {
+    auto deg0 = motor_kicker->get_position();
+    motor_kicker->move_voltage(12000);
+    // motor_kicker->move_velocity(50);
+    while (std::abs(motor_kicker->get_position() - deg0) < 44.5 * 360) {
+      pros::delay(30);
+    } // shoot 44 times
+    motor_kicker->brake();
+  }
+  sensor_update_paused = false;
+  odom->set_position(1322, -1317);
+  odom->set_heading(333);
+
+  // STAGE 2: sweep into corner and push into hallway
+
+  drive_controller->move_to_pose_pid_async({900, -900, 180}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({740, -421, 120}, 800);
+  toggle_wings();
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-740, -421, 120}, 1400);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-100, -300, 90}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1500, -300, 90}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  // STAGE 3: sweep into the back of the hallway
+  toggle_wings();
+  pros::delay(100);
+  drive_controller->move_to_pose_pid_async({-800, -900, 45}, 600);
+  pros::delay(150);
+  toggle_wings();
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1150, -1150, 90}, 600);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1250, -750, 180}, 600);
+  wait_until_motion_complete(drive_controller);
+
+  // retract wings
+
+  toggle_wings();
+  pros::delay(250);
+  drive_controller->move_to_pose_pid_async({-1530, -1000, 180}, 400);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1530, -800, 170}, 600);
+  wait_until_motion_complete(drive_controller);
+}
+
+
+/*
+  // old continuation
+  // back up and push across barrier
+
+  drive_controller->move_to_pose_pid_async({-800, -750, 180}, 700);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-800, 600, 180}, 1200);
+  wait_until_motion_complete(drive_controller);
+  toggle_wings();
+
+  // go through the hallway
+
+  drive_controller->move_to_pose_pid_async({-850, -900, 180}, 700);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1500, -900, 180}, 700);
+  wait_until_motion_complete(drive_controller);
+
+  odom->set_position(-1570, odom->get_pose().y);
+
+  drive_controller->move_to_pose_pid_async({-1300, 1100, 180}, 1500);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1500, 1100, 180}, 500);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-1000, 1100, 180}, 600);
+  wait_until_motion_complete(drive_controller);
+
+  // shove some triballs into the center
+  drive_controller->move_to_pose_pid_async({-1000, 850, 315}, 800);
+  pros::delay(200);
+  toggle_wings();
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-600, 600, 270}, 800);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-750, 500, 270}, 600);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-300, 300, 180}, 1000);
+  wait_until_motion_complete(drive_controller);
+  toggle_wings();
+  pros::delay(250);
+
+  // wingless push
+
+  drive_controller->move_to_pose_pid_async({-300, 2400, 180}, 1200);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({-300, 300, 180}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  // sweep right
+
+  drive_controller->move_to_pose_pid_async({900, 320, 180}, 2000);
+  wait_until_motion_complete(drive_controller);
+  toggle_wings();
+  pros::delay(250);
+
+  drive_controller->move_to_pose_pid_async({500, 650, 130}, 800);
+  wait_until_motion_complete(drive_controller);
+
+  // aim + push
+
+  toggle_wings();
+  pros::delay(250);
+  drive_controller->move_to_pose_pid_async({300, 300, 180}, 800);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({300, 2400, 180}, 1200);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({300, 300, 180}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  // aim + realign
+
+  drive_controller->move_to_pose_pid_async({0, 300, 180}, 500);
+  wait_until_motion_complete(drive_controller);
+  toggle_wings();
+  pros::delay(250);
+
+  drive_controller->move_to_pose_pid_async({0, 2400, 180}, 1200);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({0, 300, 180}, 1000);
+  wait_until_motion_complete(drive_controller);
+
+  drive_controller->move_to_pose_pid_async({0, 2400, 180}, 1200);
+  wait_until_motion_complete(drive_controller);
+*/

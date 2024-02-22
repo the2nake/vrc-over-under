@@ -107,7 +107,7 @@ void auton_selector() {
   int menu_width = 240 - 2 * menu_margin;
   int btn_margin = 4; // px
   int auton_btn_w = (int)std::floor(menu_width * 3.0 / 4.0);
-  int auton_btn_h = 48;
+  int auton_btn_h = 32;
 
   // takes up the right half of the screen
   // margins 4px
@@ -201,6 +201,12 @@ void auton_selector() {
                                   auton_btn_w, auton_btn_h, btn_margin);
 
   auto auton_btn4 = new_auton_btn(auton_panel, auton_btn3, {4}, "auton skills",
+                                  auton_btn_w, auton_btn_h, btn_margin);
+
+  auto auton_btn5 = new_auton_btn(auton_panel, auton_btn4, {5}, "auton skills 2",
+                                  auton_btn_w, auton_btn_h, btn_margin);
+
+  auto auton_btn6 = new_auton_btn(auton_panel, auton_btn5, {6}, "auton driver",
                                   auton_btn_w, auton_btn_h, btn_margin);
 
   while (!config::init_complete) {
@@ -297,13 +303,19 @@ void autonomous() {
   case 4:
     auton_skills(drive_controller, odom);
     break;
+  case 5:
+    auton_skills_2(drive_controller, odom);
+    break;
+  case 6:
+    auton_driver(drive_controller, odom);
+    break;
   default:
     odom->set_heading(270);
     break;
   }
 
   end = pros::millis();
-  pros::screen::print(pros::E_TEXT_MEDIUM, 9, "Auton stop time (ms): %d",
+  pros::screen::print(pros::E_TEXT_MEDIUM, 9, "Auton stop (ms): %d",
                       end - start);
 }
 
