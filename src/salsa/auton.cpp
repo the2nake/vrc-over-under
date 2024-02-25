@@ -153,9 +153,10 @@ void auton_awp_d_safe(StarDriveController *drive_controller, Odometry *odom) {
 
   // outtake and turn + push
   motor_intake->move_voltage(-12000);
-  drive_controller->move_to_pose_pid_async({1000, -1600, 180}, 500);
+  pros::delay(300);
+  drive_controller->move_to_pose_pid_async({800, -1600, 180}, 500); // 1000, -1600, 180
   wait_until_motion_complete(drive_controller);
-  drive_controller->move_to_pose_pid_async({0, -1600, 180}, 500);
+  drive_controller->move_to_pose_pid_async({0, -1600, 180}, 1000); // 500ms
   wait_until_motion_complete(drive_controller);
   motor_intake->brake();
 

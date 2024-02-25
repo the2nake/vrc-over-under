@@ -76,6 +76,7 @@ public:
     std::vector<pros::Motor *> motors = {};
   };
   static StarDriveBuilder *builder() { return new StarDriveBuilder(); }
+
 private:
   StarDrive() {}
   float boost_width = 0.0;

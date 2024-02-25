@@ -203,8 +203,9 @@ void auton_selector() {
   auto auton_btn4 = new_auton_btn(auton_panel, auton_btn3, {4}, "auton skills",
                                   auton_btn_w, auton_btn_h, btn_margin);
 
-  auto auton_btn5 = new_auton_btn(auton_panel, auton_btn4, {5}, "auton skills 2",
-                                  auton_btn_w, auton_btn_h, btn_margin);
+  auto auton_btn5 =
+      new_auton_btn(auton_panel, auton_btn4, {5}, "auton skills 2", auton_btn_w,
+                    auton_btn_h, btn_margin);
 
   auto auton_btn6 = new_auton_btn(auton_panel, auton_btn5, {6}, "auton driver",
                                   auton_btn_w, auton_btn_h, btn_margin);
@@ -288,25 +289,41 @@ void autonomous() {
 
   switch (config::selected_auton) {
   case 1:
-    // INFO: SAFE-01: This goalside route starts with a triball in the intake
+    // SETUP INFO: goalside route, triball in the intake, facing goal (heading
+    // 270), centered on tile
     auton_awp_o_safe(drive_controller, odom);
     break;
   case 2:
-    // INFO: SAFE-02: This goalside route starts with a triball on the wedge
+    // SETUP INFO: triball on the wedge, wedge aligns with edge of the tile
+    // closer to the corner, intake facing hallway triball, centered in the
+    // hallway
     auton_awp_o_5_ball(drive_controller, odom);
     break;
   case 3:
-    // INFO: DEF-AWP-SAFE-01: This load side route starts with a triball in the
-    // intake
+    // SETUP INFO: This load side route starts with a triball in the
+    // intake, wedge aligned with the edge of the tile near the hang bars, robot
+    // aligned with the tile of the hallway (a bit offset from hall center)
     auton_awp_d_safe(drive_controller, odom);
     break;
   case 4:
+    // SETUP INFO: start with the robot aligned against the match load zone on
+    // the right, intake facing away from the goal. the intake sled should touch
+    // the side of the field. one triball on the side of the goal, towards the
+    // right, the other in the middle of the wedge.
     auton_skills(drive_controller, odom);
     break;
   case 5:
+    // SETUP INFO: start with the robot aligned against the match load zone on
+    // the right, intake facing away from the goal. the intake sled should touch
+    // the side of the field. one triball on the side of the goal, towards the
+    // right, the other in the middle of the wedge.
     auton_skills_2(drive_controller, odom);
     break;
   case 6:
+    // SETUP INFO: start with the robot aligned against the match load zone on
+    // the right, intake facing away from the goal. the intake sled should touch
+    // the side of the field. one triball on the side of the goal, towards the
+    // right, the other in the middle of the wedge.
     auton_driver(drive_controller, odom);
     break;
   default:
