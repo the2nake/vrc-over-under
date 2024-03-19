@@ -9,11 +9,9 @@ pros::Motor *motor_rm = nullptr;
 pros::Motor *motor_rb = nullptr;
 
 pros::Motor *motor_intake = nullptr;
-pros::Motor *motor_kicker = nullptr;
+// pros::Motor *motor_kicker = nullptr;
 
-pros::ADIDigitalOut *piston_lift = nullptr;
 pros::ADIDigitalOut *piston_wings = nullptr;
-bool is_lift_out = false;
 bool is_wings_out = false;
 
 void initialise_devices() {
@@ -31,13 +29,17 @@ void initialise_devices() {
   motor_rb = new pros::Motor(PORT_DRIVE_RB, pros::E_MOTOR_GEAR_BLUE, false,
                              pros::E_MOTOR_ENCODER_DEGREES);
 
-  motor_intake = new pros::Motor(PORT_INTAKE, pros::E_MOTOR_GEAR_BLUE, true,
+  motor_intake = new pros::Motor(PORT_INTAKE, pros::E_MOTOR_GEAR_BLUE, false,
                                  pros::E_MOTOR_ENCODER_DEGREES);
   motor_intake->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-  motor_kicker = new pros::Motor(PORT_KICKER, pros::E_MOTOR_GEAR_RED, false,
-                                 pros::E_MOTOR_ENCODER_DEGREES);
-  motor_kicker->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+  // motor_kicker = new pros::Motor(PORT_KICKER, pros::E_MOTOR_GEAR_RED, false,
+  //                                pros::E_MOTOR_ENCODER_DEGREES);
+  // motor_kicker->set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
 
-  piston_lift = new pros::ADIDigitalOut(PORT_LIFT, false);
   piston_wings = new pros::ADIDigitalOut(PORT_WINGS, false);
+}
+
+void toggle_wings() {
+  is_wings_out = !is_wings_out;
+  piston_wings->set_value(is_wings_out);
 }

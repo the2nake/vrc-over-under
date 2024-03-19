@@ -1,9 +1,10 @@
 /* home.vn2007@gmail.com - 2023 */
 
 #include "main.h"
-#include "salsa/auton.hpp"
+// #include "salsa/auton.hpp"
 
 #include "gui.hpp"
+#include "cookbook/util.hpp"
 
 #include <iomanip>
 #include <map>
@@ -33,9 +34,10 @@ std::map<lv_obj_t *, AutonInfo> btn_to_info_map;
 pros::controller_digital_e_t intake_in;
 pros::controller_digital_e_t intake_out;
 
-pros::controller_digital_e_t kicker_shoot;
-pros::controller_digital_e_t lift_toggle;
+// pros::controller_digital_e_t kicker_shoot;
 pros::controller_digital_e_t wings_toggle;
+
+pros::controller_digital_e_t odom_reset;
 
 }; // namespace config
 
@@ -45,6 +47,8 @@ void lv_tick_loop(void *) {
     pros::delay(5);
   }
 }
+
+/*
 
 void odom_update_handler(void *params) {
   int update_delay = (int)(1000 / config::aps_update_hz); // in ms
@@ -114,7 +118,7 @@ void auton_selector() {
   // 232 px square
 
   // scrolling should occur automatically
-  /*Create a scroll bar style*/
+  // Create a scroll bar style
   static lv_style_t style_sb;
   lv_style_copy(&style_sb, &lv_style_plain);
   style_sb.body.main_color = LV_COLOR_BLACK;
@@ -124,8 +128,8 @@ void auton_selector() {
   style_sb.body.border.opa = LV_OPA_70;
   style_sb.body.radius = LV_RADIUS_CIRCLE;
   style_sb.body.opa = LV_OPA_60;
-  style_sb.body.padding.hor = 3;   /*Horizontal padding on the right*/
-  style_sb.body.padding.inner = 8; /*Scrollbar width*/
+  style_sb.body.padding.hor = 3;   // Horizontal padding on the right
+  style_sb.body.padding.inner = 8; // Scrollbar width
 
   lv_style_btn_ina.body.radius = 4;
   lv_style_btn_tgl_pr.body.radius = 4;
@@ -214,23 +218,25 @@ void auton_selector() {
     pros::delay(20);
   }
 
-  /*
     // once confirm is hit, delete everything
     lv_obj_clean(auton_panel);
     lv_obj_clean(run_before_teleop_switch);
     lv_obj_clean(sw_label);
     lv_obj_clean(execute_btn);
-    */
+
 }
+
+*/
 
 void initialize() {
   config::init_complete = false;
-
+  /*
   // LVGL styles
   lv_style_init();
 
   pros::Task lvgl_tick{lv_tick_loop};
   lv_init();
+  */
 
   // ===== CONFIGURATION =====
 
@@ -243,9 +249,9 @@ void initialize() {
 
   intake_in = pros::E_CONTROLLER_DIGITAL_R2;
   intake_out = pros::E_CONTROLLER_DIGITAL_R1;
-  kicker_shoot = pros::E_CONTROLLER_DIGITAL_L2;
+  // kicker_shoot = pros::E_CONTROLLER_DIGITAL_L2;
   wings_toggle = pros::E_CONTROLLER_DIGITAL_L1;
-  lift_toggle = pros::E_CONTROLLER_DIGITAL_UP;
+  odom_reset = pros::E_CONTROLLER_DIGITAL_A;
 
   selected_auton = 0;
 
@@ -256,16 +262,21 @@ void initialize() {
 
   initialise_devices();
   initialise_chassis();
+
+  /*
   initialise_sensors();
+  */
 
+  /*
   pros::Task odometry_update{odom_update_handler};
-
+  */
   program_running = true;
   pros::delay(250);
-
+  /*
   odom->set_position(0, 0);
 
   auton_selector();
+  */
 }
 
 void disabled() {}
@@ -277,7 +288,7 @@ void autonomous() {
   uint32_t end = 0;
   // NOTE: 0 heading is straight ahead for the driver
   //       0, 0 is the center of the field
-
+  /*
   StarDriveController *drive_controller = StarDriveController::builder()
                                               ->with_drive(chassis)
                                               .with_odometry(odom)
@@ -330,7 +341,7 @@ void autonomous() {
     odom->set_heading(270);
     break;
   }
-
+  */
   end = pros::millis();
   pros::screen::print(pros::E_TEXT_MEDIUM, 9, "Auton stop (ms): %d",
                       end - start);
@@ -346,26 +357,22 @@ void intake_control(pros::Controller *controller) {
   }
 }
 
+/*
 void kicker_control(pros::Controller *controller) {
   if (controller->get_digital(config::kicker_shoot)) {
     motor_kicker->move_voltage(12000);
   } else {
     motor_kicker->brake();
   }
-}
+}*/
 
+/*
 void wings_control(pros::Controller *controller) {
   if (controller->get_digital_new_press(config::wings_toggle)) {
     toggle_wings();
   }
 }
-
-void lift_control(pros::Controller *controller) {
-  if (controller->get_digital_new_press(config::lift_toggle)) {
-    is_lift_out = !is_lift_out;
-    piston_lift->set_value(is_lift_out);
-  }
-}
+*/
 
 void opcontrol() {
   if (config::run_auton_before_teleop) {
@@ -376,6 +383,7 @@ void opcontrol() {
       new pros::Controller(pros::E_CONTROLLER_MASTER);
 
   // graph setup
+  
   gui::Graph *graph = new gui::Graph();
   graph->set_display_region({244, 4, 232, 232});
   graph->set_window(-1000.0, -1000.0, 2000.0, 2000.0);
@@ -387,28 +395,30 @@ void opcontrol() {
 
     // INPUT
     auto input_lx = controller->get_analog(ANALOG_LEFT_X) / 127.0;
+    auto input_ly = controller->get_analog(ANALOG_LEFT_Y) / 127.0;
     auto input_rx = controller->get_analog(ANALOG_RIGHT_X) / 127.0;
     auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
 
     // OUTPUT
-    if (std::abs(input_lx) < config::joystick_threshold &&
-        std::abs(input_rx) < config::joystick_threshold &&
+    if (std::abs(input_ly) < config::joystick_threshold &&
         std::abs(input_ry) < config::joystick_threshold) {
       chassis->brake();
     } else {
-      auto velocities = chassis->drive_field_based(input_rx, input_ry, input_lx,
-                                                   odom->get_pose().heading);
+      chassis->drive_tank(input_ly, input_ry);
+      //auto velocities = chassis->drive_field_based(input_rx, input_ry, input_lx,
+      //                                             odom->get_pose().heading);
     }
 
-    if (controller->get_digital_new_press(DIGITAL_A)) {
+    /*
+    if (controller->get_digital_new_press(config::odom_reset)) {
       odom->set_heading(0);
     }
-
+    */
     intake_control(controller);
-    wings_control(controller);
-    lift_control(controller);
-    kicker_control(controller);
+    // wings_control(controller);
+    // kicker_control(controller);
 
+    /*
     // debug
     Pose pose = odom->get_pose();
     pros::screen::print(pros::E_TEXT_MEDIUM, 0, "X, Y: %.2f, %.2f", pose.x,
@@ -422,6 +432,7 @@ void opcontrol() {
 
     graph->draw();
     graph->plot(points);
+    */
 
     double cycle_time = pros::millis() - cycle_start;
     pros::delay(std::max(0.0, config::program_delay_per_cycle - cycle_time));

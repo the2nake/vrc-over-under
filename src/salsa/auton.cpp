@@ -2,19 +2,14 @@
 
 #include "salsa/chassis.hpp"
 #include "salsa/devices.hpp"
-#include "salsa/sensors.hpp"
+// #include "salsa/sensors.hpp"
 
 bool testing = false;
-
+/*
 void wait_until_motion_complete(StarDriveController *controller) {
   while (!controller->is_motion_complete()) {
     pros::delay(20);
   }
-}
-
-void toggle_wings() {
-  is_wings_out = !is_wings_out;
-  piston_wings->set_value(is_wings_out);
 }
 
 void auton_awp_o_safe(StarDriveController *drive_controller, Odometry *odom) {
@@ -415,15 +410,6 @@ void auton_skills_2(StarDriveController *drive_controller, Odometry *odom) {
   drive_controller->move_to_pose_pid_async({0, 1660, 270}, 1000);
   wait_until_motion_complete(drive_controller);
 
-  /*
-  drive_controller->move_to_pose_pid_async(
-      {-1050, 1700, 270}, 1000); // avoid the goal cone at all costs !
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({0, 1700, 270}, 1000);
-  wait_until_motion_complete(drive_controller);
-  */
-
   // STAGE 5: funnel towards center
 
   drive_controller->move_to_pose_pid_async({-900, 1200, 315}, 1000);
@@ -569,99 +555,4 @@ void auton_driver(StarDriveController* drive_controller, Odometry* odom) {
   drive_controller->move_to_pose_pid_async({-1530, -800, 170}, 600);
   wait_until_motion_complete(drive_controller);
 }
-
-
-/*
-  // old continuation
-  // back up and push across barrier
-
-  drive_controller->move_to_pose_pid_async({-800, -750, 180}, 700);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-800, 600, 180}, 1200);
-  wait_until_motion_complete(drive_controller);
-  toggle_wings();
-
-  // go through the hallway
-
-  drive_controller->move_to_pose_pid_async({-850, -900, 180}, 700);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-1500, -900, 180}, 700);
-  wait_until_motion_complete(drive_controller);
-
-  odom->set_position(-1570, odom->get_pose().y);
-
-  drive_controller->move_to_pose_pid_async({-1300, 1100, 180}, 1500);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-1500, 1100, 180}, 500);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-1000, 1100, 180}, 600);
-  wait_until_motion_complete(drive_controller);
-
-  // shove some triballs into the center
-  drive_controller->move_to_pose_pid_async({-1000, 850, 315}, 800);
-  pros::delay(200);
-  toggle_wings();
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-600, 600, 270}, 800);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-750, 500, 270}, 600);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-300, 300, 180}, 1000);
-  wait_until_motion_complete(drive_controller);
-  toggle_wings();
-  pros::delay(250);
-
-  // wingless push
-
-  drive_controller->move_to_pose_pid_async({-300, 2400, 180}, 1200);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({-300, 300, 180}, 1000);
-  wait_until_motion_complete(drive_controller);
-
-  // sweep right
-
-  drive_controller->move_to_pose_pid_async({900, 320, 180}, 2000);
-  wait_until_motion_complete(drive_controller);
-  toggle_wings();
-  pros::delay(250);
-
-  drive_controller->move_to_pose_pid_async({500, 650, 130}, 800);
-  wait_until_motion_complete(drive_controller);
-
-  // aim + push
-
-  toggle_wings();
-  pros::delay(250);
-  drive_controller->move_to_pose_pid_async({300, 300, 180}, 800);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({300, 2400, 180}, 1200);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({300, 300, 180}, 1000);
-  wait_until_motion_complete(drive_controller);
-
-  // aim + realign
-
-  drive_controller->move_to_pose_pid_async({0, 300, 180}, 500);
-  wait_until_motion_complete(drive_controller);
-  toggle_wings();
-  pros::delay(250);
-
-  drive_controller->move_to_pose_pid_async({0, 2400, 180}, 1200);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({0, 300, 180}, 1000);
-  wait_until_motion_complete(drive_controller);
-
-  drive_controller->move_to_pose_pid_async({0, 2400, 180}, 1200);
-  wait_until_motion_complete(drive_controller);
 */
