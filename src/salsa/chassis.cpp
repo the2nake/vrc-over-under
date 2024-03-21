@@ -8,7 +8,7 @@ void initialise_chassis() {
                                              motor_rf, motor_rm, motor_rb};
   chassis = TankDrive::TankDriveBuilder()
                 .with_motors(drive_motors)
-                .with_geometry(10.0)
+                .with_geometry(0.28829) // metres
                 .build();
   chassis->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 }

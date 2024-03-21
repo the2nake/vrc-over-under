@@ -4,7 +4,6 @@
 // #include "salsa/auton.hpp"
 
 #include "gui.hpp"
-#include "cookbook/util.hpp"
 
 #include <iomanip>
 #include <map>
@@ -355,6 +354,9 @@ void intake_control(pros::Controller *controller) {
   } else {
     motor_intake->brake();
   }
+
+  // TODO: implement the adaptive voltage based on if a triball is currently in
+  // the intake
 }
 
 /*
@@ -383,10 +385,10 @@ void opcontrol() {
       new pros::Controller(pros::E_CONTROLLER_MASTER);
 
   // graph setup
-  
+
   gui::Graph *graph = new gui::Graph();
   graph->set_display_region({244, 4, 232, 232});
-  graph->set_window(-1000.0, -1000.0, 2000.0, 2000.0);
+  graph->set_window(-1.8, -1.8, 3.6, 3.6);
   graph->point_width = 3;
   std::vector<Point<double>> points = {{2.0, 2.0}};
 
@@ -405,8 +407,9 @@ void opcontrol() {
       chassis->brake();
     } else {
       chassis->drive_tank(input_ly, input_ry);
-      //auto velocities = chassis->drive_field_based(input_rx, input_ry, input_lx,
-      //                                             odom->get_pose().heading);
+      // auto velocities = chassis->drive_field_based(input_rx, input_ry,
+      // input_lx,
+      //                                              odom->get_pose().heading);
     }
 
     /*
