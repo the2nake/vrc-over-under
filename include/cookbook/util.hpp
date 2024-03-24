@@ -29,7 +29,7 @@ template <typename T> struct Segment {
 
 /**
  * Get the rpm of a gearset
- *a
+ *
  * @param gearing The gearset
  * @returns The rpm
  */

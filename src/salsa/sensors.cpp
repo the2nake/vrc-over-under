@@ -22,6 +22,7 @@ void initialise_sensors() {
   imu = new CustomImu(default_imu);
   imu->set_multiplier((5.0 * 360.0) / (5.0 * 360.0 + 0));
 
+  /*
   x_enc = new pros::ADIEncoder(X_AXIS_TOP, X_AXIS_BOTTOM, false);
   y_enc = new pros::ADIEncoder(Y_AXIS_TOP, Y_AXIS_BOTTOM, false);
 
@@ -32,4 +33,5 @@ void initialise_sensors() {
              .with_x_tracker(x_enc, -220.0 / 360.0, -107.95)
              .with_tracker_rotation(0.0)
              .build();
+             */
 }

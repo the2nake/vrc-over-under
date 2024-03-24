@@ -28,9 +28,9 @@ void StarDriveController::configure_pidf_r(double p, double i, double d,
 
 void StarDriveController::move_to_pose_pid_async(Pose goal, int ms_timeout) {
   motion_complete = false;
-  x_pidf->set_target(goal.x);
-  y_pidf->set_target(goal.y);
-  r_pidf->set_target(goal.heading);
+  x_pidf->set_init_target(goal.x);
+  y_pidf->set_init_target(goal.y);
+  r_pidf->set_init_target(goal.heading);
 
   pros::Task task{[=] {
     bool settled = false;

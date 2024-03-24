@@ -8,7 +8,11 @@ class PIDFController {
 
 public:
   void configure(double kp, double ki, double kd, double feedforward = 0);
+  void set_init_target(
+      double val); // sets is_first_update to true, ignores I and D terms
+
   void set_target(double val);
+  double get_target() { return target.load(); }
 
   double update_sensor(double val);
   double update_error(double val);

@@ -16,10 +16,12 @@ struct AutonInfo {
 namespace config {
 bool program_running;
 
-int program_update_hz;
 float joystick_threshold;
-double program_delay_per_cycle;
+int program_delay_per_cycle;
 
+int program_update_hz;
+int data_update_hz;
+int screen_update_hz;
 int aps_update_hz;
 
 bool run_auton_before_teleop;
@@ -241,8 +243,11 @@ void initialize() {
 
   using namespace config;
 
-  program_update_hz = 40;
+  program_update_hz = 25;
+  data_update_hz = 100;
+  screen_update_hz = 30;
   aps_update_hz = 100;
+  program_delay_per_cycle = 5;
 
   joystick_threshold = 0.02;
 
@@ -255,9 +260,6 @@ void initialize() {
   selected_auton = 0;
 
   //  ===== END CONFIG =====
-
-  program_delay_per_cycle =
-      std::max(1000.0 / program_update_hz, 5.0); // wait no lower than 5 ms
 
   initialise_devices();
   initialise_chassis();
@@ -392,52 +394,100 @@ void opcontrol() {
   graph->point_width = 3;
   std::vector<Point<double>> points = {{2.0, 2.0}};
 
+  int loop_count = 0, control_loop_count = 0, data_loop_count = 0,
+      screen_loop_count = 0;
+
+  float left = 0, right = 0;
+  float avg_left = 0, avg_right = 0;
+
   while (config::program_running) {
     auto cycle_start = pros::millis();
 
-    // INPUT
-    auto input_lx = controller->get_analog(ANALOG_LEFT_X) / 127.0;
-    auto input_ly = controller->get_analog(ANALOG_LEFT_Y) / 127.0;
-    auto input_rx = controller->get_analog(ANALOG_RIGHT_X) / 127.0;
-    auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
+    if (loop_count % (int)(std::ceil((1000 / config::program_update_hz) /
+                                     config::program_delay_per_cycle)) ==
+        0) {
+      // INPUT
+      auto input_lx = controller->get_analog(ANALOG_LEFT_X) / 127.0;
+      auto input_ly = controller->get_analog(ANALOG_LEFT_Y) / 127.0;
+      auto input_rx = controller->get_analog(ANALOG_RIGHT_X) / 127.0;
+      auto input_ry = controller->get_analog(ANALOG_RIGHT_Y) / 127.0;
 
-    // OUTPUT
-    if (std::abs(input_ly) < config::joystick_threshold &&
-        std::abs(input_ry) < config::joystick_threshold) {
-      chassis->brake();
-    } else {
-      chassis->drive_tank(input_ly, input_ry);
-      // auto velocities = chassis->drive_field_based(input_rx, input_ry,
-      // input_lx,
-      //                                              odom->get_pose().heading);
+      // OUTPUT
+      if (false && (std::abs(input_ly) < config::joystick_threshold &&
+                    std::abs(input_ry) < config::joystick_threshold)) {
+        chassis->brake();
+      } else {
+        // chassis->drive_tank_raw(input_ly, input_ry);
+        chassis->drive_tank_pid(1.65 * input_ly, 1.65 * input_ry);
+        // auto velocities = chassis->drive_field_based(input_rx, input_ry,
+        // input_lx,
+        //                                              odom->get_pose().heading);
+      }
+
+      /*
+      if (controller->get_digital_new_press(config::odom_reset)) {
+        odom->set_heading(0);
+      }
+      */
+      intake_control(controller);
+      // wings_control(controller);
+      // kicker_control(controller);
+      control_loop_count++;
     }
 
-    /*
-    if (controller->get_digital_new_press(config::odom_reset)) {
-      odom->set_heading(0);
+    // DATA
+
+    if (loop_count % (int)(std::ceil((1000.0 / config::data_update_hz) /
+                                     config::program_delay_per_cycle) == 0)) {
+      left = chassis->get_left_wheel_lin_vel();
+      right = chassis->get_right_wheel_lin_vel();
+      avg_left += (left - avg_left) / (double)(data_loop_count + 1);
+      avg_right += (right - avg_right) / (double)(data_loop_count + 1);
+  
+      data_loop_count++;
+      if (data_loop_count >= 100) {
+        avg_left = left;
+        avg_right = right;
+        data_loop_count = 0;
+      }
     }
-    */
-    intake_control(controller);
-    // wings_control(controller);
-    // kicker_control(controller);
 
-    /*
-    // debug
-    Pose pose = odom->get_pose();
-    pros::screen::print(pros::E_TEXT_MEDIUM, 0, "X, Y: %.2f, %.2f", pose.x,
-                        pose.y);
-    pros::screen::print(pros::E_TEXT_MEDIUM, 1, "Heading: %.2f", pose.heading);
+    // GRAPHICAL
 
-    if (points.size() > 100) {
-      points.erase(points.begin());
+    if (loop_count % (int)(std::ceil((1000.0 / config::screen_update_hz) /
+                                     config::program_delay_per_cycle)) ==
+        0) {
+
+      pros::screen::set_eraser(COLOR_BLACK);
+      pros::screen::erase();
+
+      pros::screen::print(pros::E_TEXT_MEDIUM, 0, "vcur: %.2f %.2f", left,
+                          right);
+
+      pros::screen::print(pros::E_TEXT_MEDIUM, 1, "vavg: %.2f %.2f", avg_left,
+                          avg_right);
+
+      /*
+      // debug
+      Pose pose = odom->get_pose();
+      pros::screen::print(pros::E_TEXT_MEDIUM, 0, "X, Y: %.2f, %.2f", pose.x,
+                          pose.y);
+      pros::screen::print(pros::E_TEXT_MEDIUM, 1, "Heading: %.2f",
+      pose.heading);
+
+      if (points.size() > 100) {
+        points.erase(points.begin());
+      }
+      points.push_back({pose.x, pose.y});
+
+      graph->draw();
+      graph->plot(points);
+      */
+      screen_loop_count++;
     }
-    points.push_back({pose.x, pose.y});
-
-    graph->draw();
-    graph->plot(points);
-    */
 
     double cycle_time = pros::millis() - cycle_start;
     pros::delay(std::max(0.0, config::program_delay_per_cycle - cycle_time));
+    loop_count++;
   }
 }

@@ -17,13 +17,26 @@ void PIDFController::configure(double p, double i, double d, double f) {
   mutex.give();
 }
 
-void PIDFController::set_target(double val) {
+// TODO: <low priority> change set_init_target and set_target to the same
+// function with boolean, update all function calls
+
+void PIDFController::set_init_target(double val) {
   while (!mutex.take(5)) {
     pros::delay(1);
   }
 
   target = val;
   is_first_update = true;
+
+  mutex.give();
+}
+
+void PIDFController::set_target(double val) {
+  while (!mutex.take(5)) {
+    pros::delay(1);
+  }
+
+  target = val;
 
   mutex.give();
 }
