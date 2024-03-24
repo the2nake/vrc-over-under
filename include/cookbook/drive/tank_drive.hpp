@@ -42,7 +42,7 @@ public:
      * configured such that positive voltage will move the robot forward.
      * @param motors a list of the motors, going from front to back,
      * then left to right. lf -> lm -> lb -> rf -> rm -> rb
-     * @return the builder class
+     * @return the builder object
      */
     TankDriveBuilder &with_motors(std::vector<pros::Motor *> motors);
 
@@ -50,8 +50,9 @@ public:
      * @brief specify the geometry of the drive. required for imu-less turning
      * @param track_width the distance between the center of the opposite sides'
      * wheels
-     * @param travel the distance travelled after spinning the motor 1 full revolution
-     * @return the builder class
+     * @param travel the distance travelled after spinning the motor 1 full
+     * revolution
+     * @return the builder object
      */
     TankDriveBuilder &with_geometry(float track_width, float travel);
 
@@ -59,7 +60,7 @@ public:
      * @brief specify the kinematics of the drive. required for motion
      * algorithms.
      * @param max_wheel_vel the maximum linear velocity of the wheels
-     * @return the builder class
+     * @return the builder object
      */
     TankDriveBuilder &with_kinematics(float max_wheel_vel);
 
@@ -70,7 +71,7 @@ public:
      * @param ki the integral gain
      * @param kd the derivative gain
      * @param settle_threshold at what controller output to settle at
-     * @return the builder class
+     * @return the builder object
      */
     TankDriveBuilder &with_pid_constants(float kp, float ki, float kd,
                                          float settle_threshold = 120.0);

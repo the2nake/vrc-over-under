@@ -27,14 +27,14 @@ public:
     /**
      * @brief adds the chassis to be controlled by the controller
      * @param chassis a pointer to the chassis
-     * @return the builder class
+     * @return the builder object
      */
     StarDriveControllerBuilder &with_drive(StarDrive *chassis);
 
     /**
      * @brief adds the odometry setup to be used by the controller
      * @param odom a pointer to the odometry object
-     * @return the builder class
+     * @return the builder object
      */
     StarDriveControllerBuilder &with_odometry(Odometry *odom);
 

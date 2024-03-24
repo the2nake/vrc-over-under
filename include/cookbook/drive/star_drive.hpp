@@ -49,7 +49,7 @@ public:
      * configured such that positive voltage will move the robot forward.
      * @param motors a c-style array of the motors, going from front to back,
      * then left to right. lf -> lm -> lb -> rf -> rm -> rb
-     * @return the builder class
+     * @return the builder object
      */
     StarDriveBuilder &with_motors(std::vector<pros::Motor *> motors);
 
@@ -59,7 +59,7 @@ public:
      * wheels
      * @param diagonal the distance between the centers of opposing corner
      * wheels
-     * @return the builder class
+     * @return the builder object
      */
     StarDriveBuilder &with_geometry(float boost_width, float diagonal);
 
