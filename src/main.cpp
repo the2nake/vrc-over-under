@@ -449,7 +449,7 @@ void opcontrol() {
       avg_right += (right - avg_right) / (double)(data_loop_count + 1);
 
       data_loop_count++;
-      if (data_loop_count >= 100) {
+      if (data_loop_count >= 50) {
         avg_left = left;
         avg_right = right;
         data_loop_count = 0;
@@ -465,10 +465,7 @@ void opcontrol() {
       pros::screen::set_eraser(COLOR_BLACK);
       pros::screen::erase();
 
-      pros::screen::print(pros::E_TEXT_MEDIUM, 0, "vcur: %.2f %.2f", left,
-                          right);
-
-      pros::screen::print(pros::E_TEXT_MEDIUM, 1, "vavg: %.2f %.2f", avg_left,
+      pros::screen::print(pros::E_TEXT_MEDIUM, 0, "vavg: %.2f %.2f", avg_left,
                           avg_right);
 
       /*
