@@ -19,7 +19,7 @@ public:
 
   bool is_motion_complete() { return motion_complete.load(); }
 
-  void move_to_pose_pid_async(Pose goal, int ms_timeout = 1000000);
+  void move_to_pose_pid_async(odom_pose_t goal, int ms_timeout = 1000000);
   void stop_async_motion();
 
   class StarDriveControllerBuilder {

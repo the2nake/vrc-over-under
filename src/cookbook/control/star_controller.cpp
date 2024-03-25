@@ -26,7 +26,7 @@ void StarDriveController::configure_pidf_r(double p, double i, double d,
   r_pidf->configure(p, i, d, f);
 }
 
-void StarDriveController::move_to_pose_pid_async(Pose goal, int ms_timeout) {
+void StarDriveController::move_to_pose_pid_async(odom_pose_t goal, int ms_timeout) {
   motion_complete = false;
   x_pidf->set_init_target(goal.x);
   y_pidf->set_init_target(goal.y);

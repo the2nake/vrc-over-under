@@ -25,7 +25,7 @@ public:
 
   double get_heading() {
     update_heading();
-    return heading;
+    return this->heading;
   }
 
 private:

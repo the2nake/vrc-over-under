@@ -1,6 +1,7 @@
 #include "cookbook/sensors/odometry.hpp"
 #include "cookbook/util.hpp"
 
+/*
 void Odometry::update() {
   double dh = 0.0;
   if (heading_uses_imu) {
@@ -116,9 +117,9 @@ Odometry::OdometryBuilder::with_x_tracker(pros::Motor *motor,
     return *this;
   }
 
-  TrackerConfig config{travel_per_encoder_unit, tracker_y_coord};
+  odom_enc_config_t config{travel_per_encoder_unit, tracker_y_coord};
 
-  std::pair<pros::Motor *, TrackerConfig> entry;
+  std::pair<pros::Motor *, odom_enc_config_t> entry;
   entry.first = motor;
   entry.second = config;
   motor_x_trackers.push_back(entry);
@@ -139,9 +140,9 @@ Odometry::OdometryBuilder::with_y_tracker(pros::Motor *motor,
     return *this;
   }
 
-  TrackerConfig config{travel_per_encoder_unit, tracker_x_coord};
+  odom_enc_config_t config{travel_per_encoder_unit, tracker_x_coord};
 
-  std::pair<pros::Motor *, TrackerConfig> entry;
+  std::pair<pros::Motor *, odom_enc_config_t> entry;
   entry.first = motor;
   entry.second = config;
   motor_y_trackers.push_back(entry);
@@ -162,9 +163,9 @@ Odometry::OdometryBuilder::with_x_tracker(pros::ADIEncoder *sensor,
     return *this;
   }
 
-  TrackerConfig config{travel_per_encoder_unit, tracker_x_coord};
+  odom_enc_config_t config{travel_per_encoder_unit, tracker_x_coord};
 
-  std::pair<pros::ADIEncoder *, TrackerConfig> entry;
+  std::pair<pros::ADIEncoder *, odom_enc_config_t> entry;
   entry.first = sensor;
   entry.second = config;
 
@@ -186,9 +187,9 @@ Odometry::OdometryBuilder::with_y_tracker(pros::ADIEncoder *sensor,
     return *this;
   }
 
-  TrackerConfig config{travel_per_encoder_unit, tracker_y_coord};
+  odom_enc_config_t config{travel_per_encoder_unit, tracker_y_coord};
 
-  std::pair<pros::ADIEncoder *, TrackerConfig> entry;
+  std::pair<pros::ADIEncoder *, odom_enc_config_t> entry;
   entry.first = sensor;
   entry.second = config;
 
@@ -257,3 +258,4 @@ Odometry *Odometry::OdometryBuilder::build() {
 
   return odometry;
 }
+*/

@@ -49,7 +49,6 @@ void lv_tick_loop(void *) {
   }
 }
 
-/*
 void odom_update_handler(void *params) {
   int update_delay = (int)std::floor(1000.0 / config::aps_update_hz); // in ms
   while (odom != nullptr) {
@@ -61,8 +60,6 @@ void odom_update_handler(void *params) {
     pros::delay(std::floor(update_delay - (pros::micros() - start) / 1000));
   }
 }
-/*
- */
 
 /*
 lv_res_t switch_callback(lv_obj_t *sw) {
@@ -247,11 +244,11 @@ void initialize() {
 
   program_update_hz = 25;
   data_update_hz = 100;
-  screen_update_hz = 30;
+  screen_update_hz = 60;
   aps_update_hz = 100;
-  program_delay_per_cycle = 5;
+  program_delay_per_cycle = 3;
 
-  joystick_threshold = 0.02;
+  joystick_threshold = 0.01;
 
   intake_in = pros::E_CONTROLLER_DIGITAL_R2;
   intake_out = pros::E_CONTROLLER_DIGITAL_R1;
@@ -265,19 +262,16 @@ void initialize() {
 
   initialise_devices();
   initialise_chassis();
-
-  /*
   initialise_sensors();
-  */
 
-  /*
   pros::Task odometry_update{odom_update_handler};
-  */
+
   program_running = true;
   pros::delay(250);
-  /*
+
   odom->set_position(0, 0);
 
+  /*
   auton_selector();
   */
 }
@@ -392,9 +386,11 @@ void opcontrol() {
 
   gui::Graph *graph = new gui::Graph();
   graph->set_display_region({244, 4, 232, 232});
-  graph->set_window(-1.8, -1.8, 3.6, 3.6);
+  //graph->set_window(-1.8, -1.8, 3.6, 3.6);
+  float a = 1.8;
+  graph->set_window(-a, -a, 2*a, 2*a);
   graph->point_width = 3;
-  std::vector<Point<double>> points = {{2.0, 2.0}};
+  std::vector<Point<double>> points = {};
 
   int loop_count = 0, control_loop_count = 0, data_loop_count = 0,
       screen_loop_count = 0;
@@ -421,7 +417,7 @@ void opcontrol() {
       } else {
         // chassis->drive_tank_raw(input_ly, input_ry);
         auto wheel_v_max = chassis->get_max_wheel_vel();
-        chassis->drive_tank_vel(wheel_v_max * input_ly, wheel_v_max * input_ry);
+        chassis->drive_tank_vel(wheel_v_max * input_ly, wheel_v_max * -input_ly);
         // auto velocities = chassis->drive_field_based(input_rx, input_ry,
         // input_lx,
         //                                              odom->get_pose().heading);
@@ -468,13 +464,12 @@ void opcontrol() {
       pros::screen::print(pros::E_TEXT_MEDIUM, 0, "vavg: %.2f %.2f", avg_left,
                           avg_right);
 
-      /*
       // debug
-      Pose pose = odom->get_pose();
-      pros::screen::print(pros::E_TEXT_MEDIUM, 0, "X, Y: %.2f, %.2f", pose.x,
+      odom_pose_t pose = odom->get_pose();
+      pros::screen::print(pros::E_TEXT_MEDIUM, 1, "(x, y): %.3f, %.3f", pose.x,
                           pose.y);
-      pros::screen::print(pros::E_TEXT_MEDIUM, 1, "Heading: %.2f",
-      pose.heading);
+      pros::screen::print(pros::E_TEXT_MEDIUM, 2, "h: %.2f deg",
+                          pose.heading);
 
       if (points.size() > 100) {
         points.erase(points.begin());
@@ -483,7 +478,7 @@ void opcontrol() {
 
       graph->draw();
       graph->plot(points);
-      */
+
       screen_loop_count++;
     }
 

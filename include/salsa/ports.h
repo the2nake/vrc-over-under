@@ -12,11 +12,11 @@
 #define PORT_DRIVE_LM 12
 #define PORT_DRIVE_LB 11
 
-#define PORT_INTAKE 16
+#define PORT_INTAKE 14
 
 #define PORT_KICKER 1
 
-#define PORT_Y_AXIS
-#define PORT_X_AXIS
+#define PORT_X_AXIS 16
+#define PORT_Y_AXIS 17
 
 #define PORT_WINGS 'H'
