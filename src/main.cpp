@@ -417,7 +417,7 @@ void opcontrol() {
       } else {
         // chassis->drive_tank_raw(input_ly, input_ry);
         auto wheel_v_max = chassis->get_max_wheel_vel();
-        chassis->drive_tank_vel(wheel_v_max * input_ly, wheel_v_max * -input_ly);
+        chassis->drive_tank_vel(wheel_v_max * input_ly, wheel_v_max * input_ry);
         // auto velocities = chassis->drive_field_based(input_rx, input_ry,
         // input_lx,
         //                                              odom->get_pose().heading);
