@@ -1,6 +1,9 @@
-#include "salsa/control.hpp"
+#include "models.hpp"
+
 #include <cmath>
 
-int wheel_vel_ff(double pct) {
+namespace models {
+int default_motor_ff_model(double pct) {
   return (11800 * std::abs(pct) + 77) * (std::signbit(pct) ? -1 : 1);
 }
+};

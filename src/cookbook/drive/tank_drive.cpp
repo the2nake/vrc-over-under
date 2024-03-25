@@ -3,23 +3,17 @@
 #include "api.h"
 #include "cookbook/control/pid.hpp"
 #include "cookbook/util.hpp"
+#include <numeric>
 
-TankDrive::TankDriveBuilder &
-TankDrive::TankDriveBuilder::with_motors(std::vector<pros::Motor *> motors) {
-  if (motors.size() % 2 != 0) {
-    failed = true;
-    return *this;
-  }
+TankDrive::TankDriveBuilder &TankDrive::TankDriveBuilder::with_left_motors(
+    std::vector<pros::Motor> &motors) {
+  this->left_motors = new pros::MotorGroup(motors);
+  return *this;
+}
 
-  for (auto motor : motors) {
-    if (motor == nullptr || errno == ENXIO || errno == ENODEV) {
-      failed = true;
-      return *this;
-    }
-  }
-
-  this->motors = motors;
-
+TankDrive::TankDriveBuilder &TankDrive::TankDriveBuilder::with_right_motors(
+    std::vector<pros::Motor> &motors) {
+  this->right_motors = new pros::MotorGroup(motors);
   return *this;
 }
 
@@ -52,7 +46,7 @@ TankDrive::TankDriveBuilder::with_pid_constants(float kp, float ki, float kd,
 
 TankDrive::TankDriveBuilder &
 TankDrive::TankDriveBuilder::with_vel_feedfoward_model(vel_ff_model_t model) {
-  this->model = model;
+  this->ff_model = model;
 
   return *this;
 }
@@ -67,7 +61,8 @@ TankDrive *TankDrive::TankDriveBuilder::build() {
   drive->track_width = track_width;
   drive->travel = travel;
   drive->max_wheel_vel = max_wheel_vel;
-  drive->motors = motors;
+  drive->left_motors = left_motors;
+  drive->right_motors = right_motors;
 
   auto left_pid = new PIDFController();
   left_pid->configure(kp, ki, kd);
@@ -78,7 +73,7 @@ TankDrive *TankDrive::TankDriveBuilder::build() {
   drive->right_wheel_pid = right_pid;
 
   drive->settle_threshold = settle_threshold;
-  drive->model = model;
+  drive->ff_model = ff_model;
 
   return drive;
 }
@@ -90,60 +85,58 @@ void TankDrive::drive_tank_raw(float l, float r) {
   limit_magnitude(vl, 1.0);
   limit_magnitude(vr, 1.0);
 
-  auto motors_per_side = std::floor(motors.size() / 2.0);
-  for (int i = 0; i < motors_per_side; i++) {
-    // auto rpm = rpm_from_gearset(motors[i]->get_gearing());
-    motors[i]->move_voltage(12000 * vl);
-  }
-
-  for (int i = motors_per_side; i < motors.size(); i++) {
-    // auto rpm = rpm_from_gearset(motors[i]->get_gearing());
-    motors[i]->move_voltage(12000 * vr);
-  }
+  left_motors->move_voltage(12000 * l);
+  right_motors->move_voltage(12000 * r);
 }
 
-double TankDrive::get_avg(motor_func_t func, bool right_side) {
-  auto motors_per_side = std::floor(motors.size() / 2.0);
-  double mean = 0.0;
-  int s = 0;
-  int lim = motors_per_side;
-  if (right_side) {
-    s = motors_per_side;
-    lim = motors.size();
-  }
-  for (int i = s; i < lim; i++) {
-    mean += (motors[i]->*(func))();
-  }
-  return mean / motors_per_side;
+double TankDrive::get_avg(mg_func_t func, bool right_side) {
+  pros::MotorGroup *mg = (right_side ? right_motors : left_motors);
+  std::vector<double> list = (mg->*func)();
+  return std::accumulate(list.begin(), list.end(), 0) / mg->size();
 }
 
 double TankDrive::get_left_wheel_lin_vel() {
-  auto mean_vel = get_avg(&pros::Motor::get_actual_velocity, false);
-  return mean_vel * travel / 60.0;
+  return travel * get_avg(&pros::MotorGroup::get_actual_velocities, false) /
+         60.0;
 }
 
 double TankDrive::get_right_wheel_lin_vel() {
-  auto mean_vel = get_avg(&pros::Motor::get_actual_velocity, true);
-  return mean_vel * travel / 60.0;
+  return travel * get_avg(&pros::MotorGroup::get_actual_velocities, true) /
+         60.0;
 }
 
-bool TankDrive::drive_tank_pid(float vl, float vr) {
-  float epsilon = 0.0001;
-
-  left_wheel_pid->set_target(vl);
-  right_wheel_pid->set_target(vr);
-
-  // tune PID values so that it outputs millivolts
-
+bool TankDrive::drive_tank_vel(float vl, float vr) {
   auto real_vl = get_left_wheel_lin_vel();
   auto real_vr = get_right_wheel_lin_vel();
+
+  float err_l = vl - real_vl;
+  float prev_err_l = left_wheel_pid->get_target() - real_vl;
+  float err_r = vr - real_vr;
+  float prev_err_r = right_wheel_pid->get_target() - real_vr;
+
+  // if error changes signs or changes in magnitude over 50%, reset integral
+  if (std::signbit(err_l) != std::signbit(prev_err_l) ||
+      std::abs(err_l / prev_err_l) > 0.5) {
+    left_wheel_pid->set_init_target(vl);
+  } else {
+    left_wheel_pid->set_target(vl);
+  }
+
+  if (std::signbit(err_r) != std::signbit(prev_err_r) ||
+      std::abs(err_r / prev_err_r) > 0.5) {
+    right_wheel_pid->set_init_target(vr);
+  } else {
+    right_wheel_pid->set_target(vr);
+  }
+
+  // tune PID values so that it outputs millivolts
 
   auto output_l = left_wheel_pid->update_sensor(real_vl);
   auto output_r = right_wheel_pid->update_sensor(real_vr);
 
-  if (model != nullptr) {
-    output_l += model(vl / max_wheel_vel);
-    output_r += model(vr / max_wheel_vel);
+  if (ff_model != nullptr) {
+    output_l += ff_model(vl / max_wheel_vel);
+    output_r += ff_model(vr / max_wheel_vel);
   }
 
   drive_tank_raw(output_l / 12000.0, output_r / 12000.0);
@@ -153,13 +146,11 @@ bool TankDrive::drive_tank_pid(float vl, float vr) {
 }
 
 void TankDrive::set_brake_mode(pros::motor_brake_mode_e_t mode) {
-  for (auto motor : motors) {
-    motor->set_brake_mode(mode);
-  }
+  left_motors->set_brake_modes(mode);
+  right_motors->set_brake_modes(mode);
 }
 
 void TankDrive::brake() {
-  for (auto motor : motors) {
-    motor->brake();
-  }
+  left_motors->brake();
+  right_motors->brake();
 }

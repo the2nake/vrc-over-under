@@ -352,11 +352,11 @@ void autonomous() {
 
 void intake_control(pros::Controller *controller) {
   if (controller->get_digital(config::intake_in)) {
-    motor_intake->move_voltage(12000);
+    motor_intake.move_voltage(12000);
   } else if (controller->get_digital(config::intake_out)) {
-    motor_intake->move_voltage(-12000);
+    motor_intake.move_voltage(-12000);
   } else {
-    motor_intake->brake();
+    motor_intake.brake();
   }
 
   // TODO: implement the adaptive voltage based on if a triball is currently in
@@ -421,7 +421,7 @@ void opcontrol() {
       } else {
         // chassis->drive_tank_raw(input_ly, input_ry);
         auto wheel_v_max = chassis->get_max_wheel_vel();
-        chassis->drive_tank_pid(wheel_v_max * input_ly, wheel_v_max * input_ry);
+        chassis->drive_tank_vel(wheel_v_max * input_ly, wheel_v_max * input_ry);
         // auto velocities = chassis->drive_field_based(input_rx, input_ry,
         // input_lx,
         //                                              odom->get_pose().heading);

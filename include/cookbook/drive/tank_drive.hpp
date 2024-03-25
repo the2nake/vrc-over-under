@@ -1,6 +1,8 @@
 #pragma once
 
 #include "cookbook/control/pid.hpp"
+
+#include "cookbook/control/models.hpp"
 #include "pros/motors.hpp"
 
 #include <vector>
@@ -8,7 +10,7 @@
 // takes a target velocity proportion and outputs millivolts
 typedef int (*vel_ff_model_t)(double);
 
-typedef double (pros::Motor::*motor_func_t)(void) const;
+typedef std::vector<double> (pros::MotorGroup::*mg_func_t)(void);
 
 class TankDrive {
 public:
@@ -28,11 +30,7 @@ public:
    * @param vr the right wheel velocity target (in real units)
    * @returns true if the pid controllers have settled
    */
-  bool drive_tank_pid(float vl, float vr);
-
-  // TODO: implement async PID motion
-  // NOTE: remember timeout and force stop implementation
-  void drive_tank_pid_async(float vl, float vr, int ms_timeout = 0);
+  bool drive_tank_vel(float vl, float vr);
 
   void set_brake_mode(pros::motor_brake_mode_e_t mode);
   void brake();
@@ -40,17 +38,25 @@ public:
   double get_left_wheel_lin_vel();
   double get_right_wheel_lin_vel();
   double get_max_wheel_vel() { return this->max_wheel_vel; }
+  double get_avg(mg_func_t func, bool right_side = true);
 
   class TankDriveBuilder {
   public:
     /**
-     * @brief adds preconfigured motors to the drive. motors should be
+     * @brief adds preconfigured motors to the left side. motors should be
      * configured such that positive voltage will move the robot forward.
-     * @param motors a list of the motors, going from front to back,
-     * then left to right. lf -> lm -> lb -> rf -> rm -> rb
+     * @param motors a list of the motors, going from front to back
      * @return the builder object
      */
-    TankDriveBuilder &with_motors(std::vector<pros::Motor *> motors);
+    TankDriveBuilder &with_left_motors(std::vector<pros::Motor> &motors);
+
+    /**
+     * @brief adds preconfigured motors to the right side. motors should be
+     * configured such that positive voltage will move the robot forward.
+     * @param motors a list of the motors, going from front to back
+     * @return the builder object
+     */
+    TankDriveBuilder &with_right_motors(std::vector<pros::Motor> &motors);
 
     /**
      * @brief specify the geometry of the drive. required for imu-less turning
@@ -103,23 +109,26 @@ public:
 
     float kp = 1.0, ki = 0.0, kd = 0.0;
     float settle_threshold = 120.0;
-    vel_ff_model_t model = nullptr;
+    vel_ff_model_t ff_model = models::default_motor_ff_model;
 
-    std::vector<pros::Motor *> motors = {};
+    pros::Motor_Group *left_motors = nullptr;
+    pros::Motor_Group *right_motors = nullptr;
   };
   static TankDriveBuilder *builder() { return new TankDriveBuilder(); }
 
 private:
   TankDrive() {}
-  double get_avg(motor_func_t func, bool right_side = true);
 
   float track_width = 1.0;
   float travel = 1.0;
   float max_wheel_vel = 1.0;
-  std::vector<pros::Motor *> motors = {}; // front to back, then left to right
+
+  // front to back
+  pros::Motor_Group *left_motors = nullptr;
+  pros::Motor_Group *right_motors = nullptr;
 
   PIDFController *left_wheel_pid = nullptr;
   PIDFController *right_wheel_pid = nullptr;
   float settle_threshold = 120.0;
-  vel_ff_model_t model = nullptr;
+  vel_ff_model_t ff_model = models::default_motor_ff_model;
 };
