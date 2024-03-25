@@ -5,6 +5,11 @@
 
 #include <vector>
 
+// takes a target velocity proportion and outputs millivolts
+typedef int (*vel_ff_model_t)(double);
+
+typedef double (pros::Motor::*motor_func_t)(void) const;
+
 class TankDrive {
 public:
   /**
@@ -34,6 +39,7 @@ public:
 
   double get_left_wheel_lin_vel();
   double get_right_wheel_lin_vel();
+  double get_max_wheel_vel() { return this->max_wheel_vel; }
 
   class TankDriveBuilder {
   public:
@@ -77,6 +83,13 @@ public:
                                          float settle_threshold = 120.0);
 
     /**
+     * @brief specifies a feedforward model for wheel velocities
+     * @param model the feedforward model
+     * @return the builder object
+     */
+    TankDriveBuilder &with_vel_feedfoward_model(vel_ff_model_t model);
+
+    /**
      * @brief creates the drive object
      * @return a pointer to the created object
      */
@@ -90,6 +103,7 @@ public:
 
     float kp = 1.0, ki = 0.0, kd = 0.0;
     float settle_threshold = 120.0;
+    vel_ff_model_t model = nullptr;
 
     std::vector<pros::Motor *> motors = {};
   };
@@ -97,6 +111,7 @@ public:
 
 private:
   TankDrive() {}
+  double get_avg(motor_func_t func, bool right_side = true);
 
   float track_width = 1.0;
   float travel = 1.0;
@@ -106,4 +121,5 @@ private:
   PIDFController *left_wheel_pid = nullptr;
   PIDFController *right_wheel_pid = nullptr;
   float settle_threshold = 120.0;
+  vel_ff_model_t model = nullptr;
 };

@@ -50,6 +50,13 @@ TankDrive::TankDriveBuilder::with_pid_constants(float kp, float ki, float kd,
   return *this;
 }
 
+TankDrive::TankDriveBuilder &
+TankDrive::TankDriveBuilder::with_vel_feedfoward_model(vel_ff_model_t model) {
+  this->model = model;
+
+  return *this;
+}
+
 TankDrive *TankDrive::TankDriveBuilder::build() {
   if (failed) {
     return nullptr;
@@ -71,6 +78,7 @@ TankDrive *TankDrive::TankDriveBuilder::build() {
   drive->right_wheel_pid = right_pid;
 
   drive->settle_threshold = settle_threshold;
+  drive->model = model;
 
   return drive;
 }
@@ -94,25 +102,29 @@ void TankDrive::drive_tank_raw(float l, float r) {
   }
 }
 
-double TankDrive::get_left_wheel_lin_vel() {
+double TankDrive::get_avg(motor_func_t func, bool right_side) {
   auto motors_per_side = std::floor(motors.size() / 2.0);
-  double mean_vel = 0.0;
-  for (int i = 0; i < motors_per_side; i++) {
-    mean_vel += motors[i]->get_actual_velocity();
+  double mean = 0.0;
+  int s = 0;
+  int lim = motors_per_side;
+  if (right_side) {
+    s = motors_per_side;
+    lim = motors.size();
   }
-  mean_vel /= 60 * motors_per_side;
+  for (int i = s; i < lim; i++) {
+    mean += (motors[i]->*(func))();
+  }
+  return mean / motors_per_side;
+}
 
-  return mean_vel * travel;
+double TankDrive::get_left_wheel_lin_vel() {
+  auto mean_vel = get_avg(&pros::Motor::get_actual_velocity, false);
+  return mean_vel * travel / 60.0;
 }
 
 double TankDrive::get_right_wheel_lin_vel() {
-  auto motors_per_side = std::floor(motors.size() / 2.0);
-  double mean_vel = 0.0;
-  for (int i = motors_per_side; i < motors.size(); i++) {
-    mean_vel += motors[i]->get_actual_velocity();
-  }
-  mean_vel /= 60 * motors_per_side;
-  return mean_vel * travel;
+  auto mean_vel = get_avg(&pros::Motor::get_actual_velocity, true);
+  return mean_vel * travel / 60.0;
 }
 
 bool TankDrive::drive_tank_pid(float vl, float vr) {
@@ -129,8 +141,10 @@ bool TankDrive::drive_tank_pid(float vl, float vr) {
   auto output_l = left_wheel_pid->update_sensor(real_vl);
   auto output_r = right_wheel_pid->update_sensor(real_vr);
 
-  output_l += 12000.0 * vl / max_wheel_vel;
-  output_r += 12000.0 * vr / max_wheel_vel;
+  if (model != nullptr) {
+    output_l += model(vl / max_wheel_vel);
+    output_r += model(vr / max_wheel_vel);
+  }
 
   drive_tank_raw(output_l / 12000.0, output_r / 12000.0);
 

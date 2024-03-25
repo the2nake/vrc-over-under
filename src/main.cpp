@@ -50,19 +50,21 @@ void lv_tick_loop(void *) {
 }
 
 /*
-
 void odom_update_handler(void *params) {
-  int update_delay = (int)(1000 / config::aps_update_hz); // in ms
+  int update_delay = (int)std::floor(1000.0 / config::aps_update_hz); // in ms
   while (odom != nullptr) {
+    uint32_t start = pros::micros();
     if (!sensor_update_paused) {
       imu->update_heading();
       odom->update();
     }
-
-    pros::delay(update_delay);
+    pros::delay(std::floor(update_delay - (pros::micros() - start) / 1000));
   }
 }
+/*
+ */
 
+/*
 lv_res_t switch_callback(lv_obj_t *sw) {
   config::run_auton_before_teleop = lv_sw_get_state(sw);
   return LV_RES_OK;
@@ -418,7 +420,8 @@ void opcontrol() {
         chassis->brake();
       } else {
         // chassis->drive_tank_raw(input_ly, input_ry);
-        chassis->drive_tank_pid(1.65 * input_ly, 1.65 * input_ry);
+        auto wheel_v_max = chassis->get_max_wheel_vel();
+        chassis->drive_tank_pid(wheel_v_max * input_ly, wheel_v_max * input_ry);
         // auto velocities = chassis->drive_field_based(input_rx, input_ry,
         // input_lx,
         //                                              odom->get_pose().heading);
@@ -438,12 +441,13 @@ void opcontrol() {
     // DATA
 
     if (loop_count % (int)(std::ceil((1000.0 / config::data_update_hz) /
-                                     config::program_delay_per_cycle) == 0)) {
+                                     config::program_delay_per_cycle)) ==
+        0) {
       left = chassis->get_left_wheel_lin_vel();
       right = chassis->get_right_wheel_lin_vel();
       avg_left += (left - avg_left) / (double)(data_loop_count + 1);
       avg_right += (right - avg_right) / (double)(data_loop_count + 1);
-  
+
       data_loop_count++;
       if (data_loop_count >= 100) {
         avg_left = left;
