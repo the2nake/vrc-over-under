@@ -386,9 +386,9 @@ void opcontrol() {
 
   gui::Graph *graph = new gui::Graph();
   graph->set_display_region({244, 4, 232, 232});
-  //graph->set_window(-1.8, -1.8, 3.6, 3.6);
+  // graph->set_window(-1.8, -1.8, 3.6, 3.6);
   float a = 1.8;
-  graph->set_window(-a, -a, 2*a, 2*a);
+  graph->set_window(-a, -a, 2 * a, 2 * a);
   graph->point_width = 3;
   std::vector<Point<double>> points = {};
 
@@ -468,8 +468,7 @@ void opcontrol() {
       odom_pose_t pose = odom->get_pose();
       pros::screen::print(pros::E_TEXT_MEDIUM, 1, "(x, y): %.3f, %.3f", pose.x,
                           pose.y);
-      pros::screen::print(pros::E_TEXT_MEDIUM, 2, "h: %.2f deg",
-                          pose.heading);
+      pros::screen::print(pros::E_TEXT_MEDIUM, 2, "h: %.2f deg", pose.heading);
 
       if (points.size() > 100) {
         points.erase(points.begin());
