@@ -15,12 +15,11 @@ typedef std::vector<double> (pros::MotorGroup::*mg_func_t)(void);
 class TankDrive {
 public:
   /**
-   * @brief moves the drive using tank control, relative to its current
-   * orientation
-   * @param l the left wheel velocity, from 1 (fwd) to -1 (rev)
-   * @param r the right wheel velocity, from 1 (fwd) to -1 (rev)
+   * @brief moves the drive using tank control
+   * @param volt_l the left wheel voltage percentage, from 1 (fwd) to -1 (rev)
+   * @param volt_r the right wheel voltage percentage, from 1 (fwd) to -1 (rev)
    */
-  void drive_tank_raw(float l, float r);
+  void drive_tank_raw(float volt_l, float volt_r);
 
   /**
    * @brief moves the drive using pid control to regulate wheel velocities. this

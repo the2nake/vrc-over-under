@@ -78,15 +78,15 @@ TankDrive *TankDrive::TankDriveBuilder::build() {
   return drive;
 }
 
-void TankDrive::drive_tank_raw(float l, float r) {
-  double vl = l;
-  double vr = r;
+void TankDrive::drive_tank_raw(float volt_l, float volt_r) {
+  double vl = volt_l;
+  double vr = volt_r;
 
   limit_magnitude(vl, 1.0);
   limit_magnitude(vr, 1.0);
 
-  left_motors->move_voltage(12000 * l);
-  right_motors->move_voltage(12000 * r);
+  left_motors->move_voltage(12000 * vl);
+  right_motors->move_voltage(12000 * vr);
 }
 
 double TankDrive::get_avg(mg_func_t func, bool right_side) {
